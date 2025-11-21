@@ -1,7 +1,14 @@
-// gemini.js (ROOT, not in src/)
+// gemini.js (ROOT, CommonJS)
 require("dotenv").config();
-const { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } = require("@google/generative-ai");
+const {
+  GoogleGenerativeAI,
+  HarmCategory,
+  HarmBlockThreshold,
+} = require("@google/generative-ai");
 
+// ---------------------------------------
+// INIT
+// ---------------------------------------
 const apiKey = process.env.GEMINI_API_KEY;
 if (!apiKey) {
   throw new Error("❌ Missing GEMINI_API_KEY in .env");
@@ -9,8 +16,10 @@ if (!apiKey) {
 
 const genAI = new GoogleGenerativeAI(apiKey);
 
+// Use one of the models from your list:
+// e.g. models/gemini-2.5-flash  ->  "gemini-2.5-flash"
 const model = genAI.getGenerativeModel({
-  model: "gemini-1.5-flash",
+  model: "gemini-2.5-flash", // 🚀 fast, modern, supports generateContent
 });
 
 const generationConfig = {
@@ -36,15 +45,34 @@ const safetySettings = [
   },
 ];
 
+// ---------------------------------------
+// MAIN RUN FUNCTION
+// ---------------------------------------
 async function run(prompt) {
-  const chatSession = model.startChat({
-    generationConfig,
-    safetySettings,
-    history: [],
-  });
+  if (!prompt || typeof prompt !== "string" || !prompt.trim()) {
+    throw new Error("Prompt must be a non-empty string");
+  }
 
-  const result = await chatSession.sendMessage(prompt);
-  return result.response.text();
+  try {
+    const chatSession = model.startChat({
+      generationConfig,
+      safetySettings,
+      history: [],
+    });
+
+    const result = await chatSession.sendMessage(prompt);
+    const text = result?.response?.text?.();
+
+    if (!text || typeof text !== "string") {
+      throw new Error("Empty or invalid response from Gemini");
+    }
+
+    return text;
+  } catch (err) {
+    console.error("🔴 Error inside gemini.run():");
+    console.error(err);
+    throw err; // let server.js send 500
+  }
 }
 
 module.exports = run;
