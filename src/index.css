@@ -1,0 +1,82 @@
+/* ------------------------------------------------------
+   FONT IMPORT
+------------------------------------------------------ */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+
+/* ------------------------------------------------------
+   RESET + BASE STYLES
+------------------------------------------------------ */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Outfit', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Base typography */
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+}
+
+body {
+  background-color: #ffffff;
+  color: #1a1a1a;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+  line-height: 1.5;
+}
+
+/* Remove ugly outlines but keep accessibility */
+*:focus-visible {
+  outline: 2px solid #4b90ff;
+  outline-offset: 2px;
+}
+
+/* Text selection color */
+::selection {
+  background: rgba(75, 144, 255, 0.2);
+  color: inherit;
+}
+
+/* ------------------------------------------------------
+   ROOT CONTAINER
+------------------------------------------------------ */
+#root {
+  min-height: 100vh;
+  display: flex;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* ------------------------------------------------------
+   GLOBAL TRANSITIONS (for future dark mode etc.)
+------------------------------------------------------ */
+body,
+.sidebar,
+.main {
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* ------------------------------------------------------
+   SCROLLBAR (WEBKIT) – subtle Gemini-like
+------------------------------------------------------ */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.7);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.9);
+}

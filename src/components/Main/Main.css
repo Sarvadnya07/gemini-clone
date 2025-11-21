@@ -1,0 +1,258 @@
+/* ------------------------------------------------------
+   MAIN LAYOUT
+------------------------------------------------------ */
+.main {
+  flex: 1;
+  min-height: 100vh;
+  padding-bottom: 15vh;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* ------------------------------------------------------
+   NAVIGATION BAR
+------------------------------------------------------ */
+.main .nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 22px;
+  padding: 20px;
+  color: #585858;
+  background: #ffffff;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+}
+
+.main .nav img {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid #e4e4e4;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.main .nav img:hover {
+  transform: scale(1.08);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+
+/* ------------------------------------------------------
+   MAIN CONTAINER
+------------------------------------------------------ */
+.main-container {
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ------------------------------------------------------
+   GREETING TEXT
+------------------------------------------------------ */
+.main .greet {
+  margin: 50px 0;
+  font-size: 56px;
+  color: #c4c7c5;
+  font-weight: 500;
+  padding: 20px;
+  line-height: 1.2;
+}
+
+.main .greet span {
+  background: linear-gradient(16deg, #4b90ff, #ff5546);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 600;
+}
+
+/* ------------------------------------------------------
+   CARD GRID (SUGGESTED PROMPTS / CHAT CARDS)
+------------------------------------------------------ */
+.main .cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 20px;
+  padding: 20px;
+  animation: fadeIn 0.4s ease;
+}
+
+.main .card {
+  height: 200px;
+  padding: 18px;
+  background-color: #f0f4f9;
+  border-radius: 14px;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.main .card:hover {
+  background-color: #e4e9ef;
+  transform: translateY(-4px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+
+.main .card p {
+  color: #585858;
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.main .card img {
+  width: 38px;
+  padding: 6px;
+  position: absolute;
+  background-color: #ffffff;
+  bottom: 10px;
+  right: 10px;
+  border-radius: 10px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* ------------------------------------------------------
+   BOTTOM SEARCH BAR
+------------------------------------------------------ */
+.main-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 900px;
+  padding: 0 20px;
+}
+
+/* Search box wrapper */
+.search-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  background-color: #f0f4f9;
+  padding: 14px 24px;
+  border-radius: 50px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.25s ease, transform 0.2s ease;
+}
+
+.search-box:hover {
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.search-box img {
+  width: 24px;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.search-box img:hover {
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+/* Text input */
+.search-box input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 8px;
+  font-size: 18px;
+  color: #333333;
+}
+
+.search-box input::placeholder {
+  color: #9ca3af;
+}
+
+/* Small container around the icons (matches your class) */
+.search-boxdiv {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+/* ------------------------------------------------------
+   FOOTER INFO
+------------------------------------------------------ */
+.main .bottom-info {
+  font-size: 13px;
+  margin: 15px auto;
+  text-align: center;
+  font-weight: 300;
+  color: #818181;
+  max-width: 600px;
+}
+
+/* ------------------------------------------------------
+   ANIMATIONS
+------------------------------------------------------ */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ------------------------------------------------------
+   RESPONSIVE FIXES
+------------------------------------------------------ */
+@media (max-width: 1024px) {
+  .main .greet {
+    margin: 30px 0 10px;
+  }
+}
+
+@media (max-width: 768px) {
+  .main .greet {
+    font-size: 40px;
+    margin-top: 20px;
+    padding: 16px;
+  }
+
+  .main .card {
+    height: 160px;
+  }
+
+  /* On smaller screens, let bottom bar flow normally
+     so it doesn't overlap content badly */
+  .main-bottom {
+    position: static;
+    transform: none;
+    margin-top: 10px;
+    padding: 0 16px 20px;
+  }
+}
+
+@media (max-width: 500px) {
+  .main .greet {
+    font-size: 32px;
+  }
+
+  .search-box {
+    padding: 10px 16px;
+    gap: 12px;
+  }
+
+  .search-box input {
+    font-size: 16px;
+  }
+}
