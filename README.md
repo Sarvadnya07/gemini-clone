@@ -1,253 +1,257 @@
-🚀 Gemini Clone — AI Chat App (React + Vite + Node + Gemini API)
+# 🚀 Gemini Clone — AI Chat App (React + Vite + Node + Gemini API)
 
-A modern, responsive, production-grade AI chat interface inspired by Google Gemini, built using React (Vite) on the frontend and Node.js + Express + Google Generative AI SDK on the backend.
+A modern, responsive, production-grade AI chat interface inspired by **Google Gemini**, built using **React (Vite)** on the frontend and **Node.js + Express + Google Generative AI SDK** on the backend.
 
-Built by Sarvadnya Suneet Sonkambale.
+Built by **Sarvadnya Suneet Sonkambale**.
 
-📸 Screenshots
+---
 
-(Add your images into /screenshots and replace paths below)
+## 📸 Screenshots
 
-Home	Chat	Sidebar
+> *(Place images in `/screenshots` and update paths)*
 
-	
-	
-🌟 Features
-🎨 Modern Chat UI
+| Home | Chat | Sidebar |
+|------|------|---------|
+| ![](./screenshots/home.png) | ![](./screenshots/chat.png) | ![](./screenshots/sidebar.png) |
 
-Fast, beautiful layout inspired by Google Gemini.
+---
 
-💬 Suggested Prompt Cards
+# 🌟 Features
 
-Quick prompt starters to test AI easily.
+### 🎨 Modern Chat UI  
+Clean, Gemini-style interface with animations.
 
-🧠 Context API State Management
+### 💬 Suggested Prompt Cards  
+Quick AI starters inspired by Google's UI.
 
-Centralized state for messages, input, loading, and errors.
+### 🧠 Context API State Management  
+Centralized chat state for smooth UX.
 
-📁 Sidebar with Recent Chats
+### 📁 Sidebar with Recent Chats  
+Animated, scrollable recent chat list.
 
-Dynamic, scrollable, mobile-optimized sidebar with animations.
+### 📱 Fully Responsive  
+Mobile-first design with drawer sidebar.
 
-📱 Fully Responsive
+### 🔐 Secure Node.js Backend  
+Protects Gemini API keys behind Express server.
 
-Adaptive layout with mobile drawer animations.
+### ⚙ Environment Variable Support  
+Complete `.env` support for both frontend and backend.
 
-🔐 Secure Node.js Backend
+### 🚦 Error Handling  
+Elegant fallbacks when API fails.
 
-Express server acts as a proxy → API key stays hidden.
+### ♿ Accessibility  
+Focus outlines, keyboard navigation, ARIA support.
 
-⚙ Environment Variable Support
+### 🧩 Extendable (Optional)
+- LocalStorage chat history  
+- Typing animation  
+- Streaming responses  
+- Voice input  
+- Image upload  
 
-Full .env system for backend and Vite frontend.
+---
 
-🚦 Robust Error Handling
+# 📂 Project Structure
 
-Friendly fallback responses when model fails.
-
-♿ Accessibility
-
-Keyboard navigation
-
-Focus-visible outlines
-
-ARIA-friendly components
-
-🧩 Extendable (Optional Features)
-
-LocalStorage chat history
-
-Typing animation
-
-Streaming responses
-
-Voice input support
-
-Image upload support
-
-📂 Project Structure
 gemini-clone/
 │
 ├── backend/
-│   ├── server.js
-│   ├── gemini.js
-│   ├── package.json
-│   └── .env
+│ ├── server.js
+│ ├── gemini.js
+│ ├── package.json
+│ └── .env
 │
 ├── src/
-│   ├── components/
-│   │   ├── Main/
-│   │   │   ├── Main.jsx
-│   │   │   └── Main.css
-│   │   └── Sidebar/
-│   │       ├── Sidebar.jsx
-│   │       └── Sidebar.css
-│   │
-│   ├── context/
-│   │   └── context.jsx
-│   │
-│   ├── assets/
-│   ├── config/
-│   │   └── gemini.js
-│   ├── App.jsx
-│   ├── App.css
-│   ├── index.css
-│   └── main.jsx
+│ ├── components/
+│ │ ├── Main/
+│ │ │ ├── Main.jsx
+│ │ │ └── Main.css
+│ │ └── Sidebar/
+│ │ ├── Sidebar.jsx
+│ │ └── Sidebar.css
+│ │
+│ ├── context/
+│ │ └── context.jsx
+│ │
+│ ├── assets/
+│ ├── config/
+│ │ └── gemini.js
+│ ├── App.jsx
+│ ├── App.css
+│ ├── index.css
+│ └── main.jsx
 │
 ├── .env (frontend)
 ├── package.json
 └── README.md
 
-⚙️ Installation & Setup
-1️⃣ Clone the repository
+yaml
+Copy code
+
+---
+
+# ⚙️ Installation & Setup
+
+## 1️⃣ Clone Repository
+
+```sh
 git clone https://github.com/your-username/gemini-clone.git
 cd gemini-clone
-
 🖥️ Frontend Setup (React + Vite)
+sh
+Copy code
 npm install
 npm run dev
-
-
 Frontend runs at:
 👉 http://localhost:5173
 
 Frontend .env
-
-Create a .env file in root:
-
+ini
+Copy code
 VITE_API_BASE_URL=http://localhost:5000
-
 🛠️ Backend Setup (Node.js + Express)
+Navigate to backend:
 
-Navigate to backend folder:
-
+sh
+Copy code
 cd backend
 npm install
-
 Backend .env
+ini
+Copy code
 GEMINI_API_KEY=your_google_api_key_here
 PORT=5000
-
 Run backend
+sh
+Copy code
 npm start
-
-
 Backend runs at:
 👉 http://localhost:5000
 
 🔌 API Route (Backend → Gemini)
 POST /api/chat
-
 Request:
 
+json
+Copy code
 {
   "prompt": "Explain neural networks."
 }
-
-
 Response:
 
+json
+Copy code
 {
   "response": "Neural networks are..."
 }
-
 🔒 Why Backend Is Required
-
 ❌ Never expose Gemini API keys in React.
-✔ The backend acts as a secure wrapper around Google Generative AI.
+✔ Backend proxy = safe, stable, expandable.
 
-Prevents theft of API key
+Advantages:
 
-Allows rate limiting
+API key protection
 
-Allows access control
+Rate limiting
 
-Enables logging & monitoring
+Access control
+
+Logging & monitoring
+
+Removes CORS complexity
 
 🚀 Deployment Guide
 ⭐ Frontend → Vercel
+Push repo to GitHub
 
-Push project to GitHub
-
-Import repo in Vercel
+Import into Vercel
 
 Set environment variable:
 
-VITE_API_BASE_URL=https://your-backend-url.onrender.com
+ini
+Copy code
+VITE_API_BASE_URL=https://your-backend.onrender.com
+Build output folder:
 
-
-Build output:
-
+nginx
+Copy code
 dist
-
-
-Deploy
+Deploy 🎉
 
 ⭐ Backend → Render (recommended)
-
 Create new Web Service
 
-Connect GitHub repo or upload backend folder
+Connect GitHub repo / upload backend
 
-Set:
+Add:
 
 Build command
 
+nginx
+Copy code
 npm install
-
-
 Start command
 
+nginx
+Copy code
 node server.js
-
-
 Environment Variables
 
+ini
+Copy code
 GEMINI_API_KEY=your_key
 PORT=5000
-
-
 Deploy
 
-Copy URL and update your Vercel frontend .env
+Copy backend URL → update frontend .env
 
 🧪 Development Scripts
 Frontend
+sh
+Copy code
 npm run dev
 npm run build
 npm run preview
-
 Backend
+sh
+Copy code
 npm start
-
 🛡 Security Notes
+Never expose API keys in frontend
 
-API keys must never appear in frontend code
+Use .env files
 
 Always use backend proxy
 
-Enable CORS properly
+Enable CORS safely
 
-Add rate limiting in production
+Add rate limiting for production
 
-Use .env (not committed to GitHub!)
+Do not commit .env to GitHub
 
 🎯 Future Improvements
+AI streaming responses
 
-AI message streaming
+Typing indicator
+
+Chat export (PDF/TXT)
 
 Markdown rendering
 
-Chat export (PDF / TXT)
+Dark mode toggle
 
-Multi-modal input (images + audio)
+Audio & image input
 
-Login system + cloud chat sync
+Login support with cloud sync
 
 📜 License
-
 MIT — free for personal & commercial use.
 
 👨‍💻 Author
-
 Sarvadnya Suneet Sonkambale
+
+yaml
+Copy code
