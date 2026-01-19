@@ -1,7 +1,9 @@
-import React, { useCallback, useContext } from 'react';
+import { useContext, useMemo } from 'react';
 import './Main.css';
 import { assets } from '../../assets/assets';
 import { Context } from '../../context/context';
+import Message from '../Message/Message';
+import Composer from '../Composer/Composer';
 
 const SUGGESTED_CARDS = [
   {
@@ -31,21 +33,9 @@ const SUGGESTED_CARDS = [
 ];
 
 const Main = () => {
-  const { input, setInput, onSent, messages, loading } = useContext(Context);
-
-  const handleSubmit = useCallback(
-    (e) => {
-      e?.preventDefault();
-      const trimmed = input.trim();
-      if (!trimmed || loading) return;
-      // onSent uses input from context when no argument is passed
-      onSent();
-    },
-    [input, loading, onSent]
-  );
+  const { setInput, onSent, messages, loading } = useContext(Context);
 
   const handleCardClick = (text) => {
-    // Fill input AND send immediately
     setInput(text);
     onSent(text);
   };
@@ -57,126 +47,72 @@ const Main = () => {
     }
   };
 
-  const handleMicClick = () => {
-    // 🎤 Hook browser speech recognition later
-    console.log('Mic clicked');
-  };
-
-  const handleGalleryClick = () => {
-    // 🖼️ Hook image upload / file picker later
-    console.log('Gallery clicked');
-  };
+  // Compute last assistant message for screen-reader announcements
+  const lastAssistant = useMemo(() => {
+    for (let i = messages.length - 1; i >= 0; i -= 1) {
+      if (messages[i].role === 'assistant') return messages[i].content || '';
+    }
+    return '';
+  }, [messages]);
 
   return (
     <div className="main">
-      {/* Top Nav */}
       <div className="nav">
         <p>Gemini</p>
         <img src={assets.user_icon} alt="User avatar" />
       </div>
 
       <div className="main-container">
-        {/* Greeting Section */}
-        <div className="greet">
-          <p>
-            <span>Hello, Dev</span>
-          </p>
-          <p>How can I help you today?</p>
-        </div>
-
-        {/* Cards Area: Suggestions when empty, chat when you have messages */}
-        <div className="cards" aria-label="Chat content">
-          {messages.length === 0 ? (
-            SUGGESTED_CARDS.map((card) => (
-              <div
-                key={card.id}
-                className="card"
-                role="button"
-                tabIndex={0}
-                onClick={() => handleCardClick(card.text)}
-                onKeyDown={(e) =>
-                  handleKeyDownIcon(e, () => handleCardClick(card.text))
-                }
-              >
-                <p>{card.text}</p>
-                <img src={card.icon} alt={card.alt} />
-              </div>
-            ))
-          ) : (
-            messages.map((msg, index) => (
-              <div
-                key={index}
-                className="card"
-                style={{
-                  backgroundColor:
-                    msg.role === 'user' ? '#e6f0ff' : '#f0f4f9',
-                }}
-              >
-                <p>
-                  <strong>
-                    {msg.role === 'user' ? 'You: ' : 'Gemini: '}
-                  </strong>
-                  {msg.content}
-                </p>
-              </div>
-            ))
-          )}
-        </div>
-
-        {/* Bottom Input / Search Box */}
-        <div className="main-bottom">
-          <form className="search-box" onSubmit={handleSubmit}>
-            <input
-              type="text"
-              placeholder="Enter a prompt here"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              aria-label="Enter a prompt"
-            />
-
-            {/* matches your CSS .search-boxdiv */}
-            <div className="search-boxdiv">
-              {/* Gallery */}
-              <img
-                src={assets.gallery_icon}
-                alt="Open gallery"
-                role="button"
-                tabIndex={0}
-                onClick={handleGalleryClick}
-                onKeyDown={(e) => handleKeyDownIcon(e, handleGalleryClick)}
-              />
-
-              {/* Mic */}
-              <img
-                src={assets.mic_icon}
-                alt="Use microphone"
-                role="button"
-                tabIndex={0}
-                onClick={handleMicClick}
-                onKeyDown={(e) => handleKeyDownIcon(e, handleMicClick)}
-              />
-
-              {/* Send */}
-              <img
-                src={assets.send_icon}
-                alt={loading ? 'Sending…' : 'Send prompt'}
-                role="button"
-                tabIndex={0}
-                onClick={handleSubmit}
-                onKeyDown={(e) => handleKeyDownIcon(e, handleSubmit)}
-                style={{
-                  opacity: loading || !input.trim() ? 0.5 : 1,
-                  pointerEvents:
-                    loading || !input.trim() ? 'none' : 'auto',
-                }}
-              />
+        {messages.length === 0 ? (
+          <>
+            <div className="greet">
+              <p>
+                <span>Hello, Dev</span>
+              </p>
+              <p>How can I help you today?</p>
             </div>
-          </form>
+            <div className="cards" aria-label="Chat content">
+              {SUGGESTED_CARDS.map((card) => (
+                <div
+                  key={card.id}
+                  className="card"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => handleCardClick(card.text)}
+                  onKeyDown={(e) => handleKeyDownIcon(e, () => handleCardClick(card.text))}
+                >
+                  <p>{card.text}</p>
+                  <img src={card.icon} alt={card.alt} />
+                </div>
+              ))}
+            </div>
+          </>
+        ) : (
+          <div className="cards" aria-label="Chat content">
+            {messages.map((msg) => (
+              <Message
+                key={msg.id}
+                id={msg.id}
+                role={msg.role}
+                content={msg.content}
+                image={msg.image}
+                attachments={msg.attachments}
+                loading={loading && msg.role === 'assistant' && msg.content === ''}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* ARIA live region for screen readers (kept visually hidden) */}
+        <div aria-live="polite" style={{position: 'absolute', left: '-9999px', width: '1px', height: '1px', overflow: 'hidden'}}>
+          {lastAssistant}
+        </div>
+
+        <div className="main-bottom">
+          <Composer />
 
           <p className="bottom-info">
-            {loading
-              ? 'Gemini is thinking...'
-              : 'Gemini may display inaccurate info, including about people, so double check its responses. Your privacy and Gemini Apps.'}
+            Gemini may display inaccurate info, including about people, so double check its responses. Your privacy and Gemini Apps.
           </p>
         </div>
       </div>

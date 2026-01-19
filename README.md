@@ -1,3 +1,41 @@
+# Gemini Clone (local)
+
+This repository is a small Gemini-like chat UI built with React + Vite and a minimal Node server.
+
+Quick start (development)
+
+Windows PowerShell:
+
+```powershell
+# Start the backend (mock streaming mode optional)
+$env:MOCK_STREAM='true'; node server.js
+
+# In a separate terminal, start the frontend
+npm run dev
+```
+
+Testing streaming behavior
+
+- Use the mock streaming server by setting `MOCK_STREAM=true` as shown above. This simulates chunked responses for local UI testing.
+
+Build for production
+
+```powershell
+npm run build
+npm run preview
+```
+
+CI
+
+A basic GitHub Actions workflow is included at `.github/workflows/ci.yml` that runs lint and build on pushes to `main`.
+
+Deployment
+
+- You can deploy the `dist` output to static hosts (Vercel, Netlify) or run `server.js` as a Node server (ensure env variables are configured).
+
+Notes
+- This project uses a lightweight client-side moderation and analytics for development/testing. Replace with server-side or provider moderation in production.
+- Voice input uses the Web Speech API (browser support required). TTS uses SpeechSynthesis. Both require browser permissions and may not work in all environments.
 # 🚀 Gemini Clone — AI Chat App (React + Vite + Node + Gemini API)
 
 A modern, responsive, production-grade AI chat interface inspired by **Google Gemini**, built using **React (Vite)** on the frontend and **Node.js + Express + Google Generative AI SDK** on the backend.

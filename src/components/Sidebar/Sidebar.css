@@ -123,6 +123,32 @@
   color: #6b7280;
 }
 
+.sidebar .recent-search input {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #e6e9ef;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.sidebar .recent-entry.pinned {
+  background-color: #fff7e6;
+  border-left: 4px solid #f59e0b;
+}
+
+.recent-entry-actions {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.recent-entry-actions button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
 /* Each recent entry */
 .sidebar .recent-entry {
   display: flex;

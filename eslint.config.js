@@ -6,6 +6,22 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 
 export default [
   { ignores: ['dist'] },
+  // Node-specific files (server scripts) — treat as node environment
+  {
+    files: ['server.js', 'gemini.js', 'debug_gemini.js', 'dotenv.js', 'test_models.js'],
+    languageOptions: {
+      globals: globals.node,
+      parserOptions: { ecmaVersion: 'latest' },
+    },
+  },
+  // Test files — enable jest/mocha globals for vitest compatibility
+  {
+    files: ['src/__tests__/**', '**/*.test.{js,jsx}'],
+    languageOptions: {
+      globals: { ...globals.jest, ...globals.mocha },
+      parserOptions: { ecmaVersion: 'latest', ecmaFeatures: { jsx: true } },
+    },
+  },
   {
     files: ['**/*.{js,jsx}'],
     languageOptions: {

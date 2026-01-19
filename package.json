@@ -8,8 +8,18 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "server": "node server.js",
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "vitest"
   },
+  "eslintIgnore": [
+    "server.js",
+    "gemini.js",
+    "debug_gemini.js",
+    "dotenv.js",
+    "test_models.js",
+    "src/__tests__/**"
+  ],
+
   "dependencies": {
     "@google/generative-ai": "^0.19.0",
     "cors": "^2.8.5",
@@ -17,7 +27,9 @@
     "express": "^5.1.0",
     "google-auth-library": "^9.14.1",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "react-markdown": "^10.1.0",
+    "react-syntax-highlighter": "^16.1.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",
@@ -29,6 +41,10 @@
     "eslint-plugin-react-hooks": "^5.1.0-rc.0",
     "eslint-plugin-react-refresh": "^0.4.9",
     "globals": "^15.9.0",
-    "vite": "^7.2.4"
+    "vite": "^7.2.4",
+    "vitest": "^1.0.0",
+    "@testing-library/react": "^14.0.0",
+    "@testing-library/jest-dom": "^6.0.0",
+    "jsdom": "^22.0.0"
   }
 }

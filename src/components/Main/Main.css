@@ -1,20 +1,14 @@
 /* ------------------------------------------------------
-   MAIN LAYOUT
+   MAIN CONTAINER
 ------------------------------------------------------ */
 .main {
   flex: 1;
   min-height: 100vh;
   padding-bottom: 15vh;
   position: relative;
-  display: flex;
-  flex-direction: column;
-  background: #ffffff;
-  transition: background 0.3s ease, color 0.3s ease;
+  background-color: #ffffff;
 }
 
-/* ------------------------------------------------------
-   NAVIGATION BAR
------------------------------------------------------- */
 .main .nav {
   display: flex;
   align-items: center;
@@ -22,149 +16,107 @@
   font-size: 22px;
   padding: 20px;
   color: #585858;
-  background: #ffffff;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  backdrop-filter: blur(6px);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.03);
 }
 
 .main .nav img {
   width: 40px;
-  height: 40px;
-  object-fit: cover;
   border-radius: 50%;
-  border: 2px solid #e4e4e4;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
-.main .nav img:hover {
-  transform: scale(1.08);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
-}
-
-/* ------------------------------------------------------
-   MAIN CONTAINER
------------------------------------------------------- */
 .main-container {
   max-width: 900px;
-  margin: 0 auto;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
+  margin: auto;
+  padding: 0 20px;
 }
 
 /* ------------------------------------------------------
-   GREETING TEXT
+   GREETING SECTION
 ------------------------------------------------------ */
 .main .greet {
-  margin: 50px 0;
+  margin: 50px 0px;
   font-size: 56px;
   color: #c4c7c5;
   font-weight: 500;
   padding: 20px;
-  line-height: 1.2;
 }
 
 .main .greet span {
-  background: linear-gradient(16deg, #4b90ff, #ff5546);
+  background: -webkit-linear-gradient(16deg, #4b90ff, #ff5546);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  font-weight: 600;
 }
 
 /* ------------------------------------------------------
-   CARD GRID (SUGGESTED PROMPTS / CHAT CARDS)
+   SUGGESTION CARDS
 ------------------------------------------------------ */
 .main .cards {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 20px;
+  gap: 15px;
   padding: 20px;
-  animation: fadeIn 0.4s ease;
 }
 
 .main .card {
   height: 200px;
-  padding: 18px;
+  padding: 15px;
   background-color: #f0f4f9;
-  border-radius: 14px;
+  border-radius: 10px;
   position: relative;
   cursor: pointer;
-  transition: all 0.25s ease;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-  overflow: hidden;
+  transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
 .main .card:hover {
-  background-color: #e4e9ef;
-  transform: translateY(-4px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+  background-color: #dfe4ea;
+  transform: translateY(-2px);
+}
+
+.main .card img {
+  width: 35px;
+  padding: 5px;
+  position: absolute;
+  background-color: white;
+  border-radius: 20px;
+  bottom: 10px;
+  right: 10px;
 }
 
 .main .card p {
   color: #585858;
   font-size: 17px;
-  font-weight: 400;
-  line-height: 1.4;
-}
-
-.main .card img {
-  width: 38px;
-  padding: 6px;
-  position: absolute;
-  background-color: #ffffff;
-  bottom: 10px;
-  right: 10px;
-  border-radius: 10px;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
 }
 
 /* ------------------------------------------------------
-   BOTTOM SEARCH BAR
+   BOTTOM INPUT SECTION
 ------------------------------------------------------ */
 .main-bottom {
   position: absolute;
   bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
   width: 100%;
   max-width: 900px;
-  padding: 0 20px;
+  padding: 0px 20px;
+  margin: auto;
+  background-color: #ffffff;
+  /* Ensure background covers content behind */
 }
 
-/* Search box wrapper */
 .search-box {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
   background-color: #f0f4f9;
-  padding: 14px 24px;
+  padding: 10px 20px;
   border-radius: 50px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  transition: box-shadow 0.25s ease, transform 0.2s ease;
-}
-
-.search-box:hover {
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
-  transform: translateY(-1px);
+  position: relative;
+  /* For image preview absolute positioning */
 }
 
 .search-box img {
   width: 24px;
   cursor: pointer;
-  opacity: 0.8;
-  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
-.search-box img:hover {
-  opacity: 1;
-  transform: scale(1.05);
-}
-
-/* Text input */
 .search-box input {
   flex: 1;
   background: transparent;
@@ -172,87 +124,80 @@
   outline: none;
   padding: 8px;
   font-size: 18px;
-  color: #333333;
 }
 
-.search-box input::placeholder {
-  color: #9ca3af;
-}
-
-/* Small container around the icons (matches your class) */
 .search-boxdiv {
   display: flex;
   align-items: center;
   gap: 15px;
 }
 
-/* ------------------------------------------------------
-   FOOTER INFO
------------------------------------------------------- */
 .main .bottom-info {
   font-size: 13px;
   margin: 15px auto;
   text-align: center;
   font-weight: 300;
-  color: #818181;
-  max-width: 600px;
+  color: #585858;
 }
 
 /* ------------------------------------------------------
-   ANIMATIONS
+   IMAGE PREVIEW (NEW)
 ------------------------------------------------------ */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.image-preview {
+  position: absolute;
+  bottom: 70px;
+  /* Adjusted to sit above the input bar */
+  left: 0;
+  background: #f0f4f9;
+  padding: 10px;
+  border-radius: 10px;
+  display: flex;
+  align-items: flex-start;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.image-preview img {
+  max-width: 120px;
+  max-height: 120px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.image-preview span {
+  margin-left: 10px;
+  cursor: pointer;
+  font-size: 20px;
+  color: #666;
+  font-weight: bold;
+}
+
+.message-image {
+  max-width: 100%;
+  max-height: 300px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  display: block;
+  object-fit: contain;
 }
 
 /* ------------------------------------------------------
-   RESPONSIVE FIXES
+   RESPONSIVE
 ------------------------------------------------------ */
-@media (max-width: 1024px) {
-  .main .greet {
-    margin: 30px 0 10px;
-  }
-}
-
-@media (max-width: 768px) {
-  .main .greet {
-    font-size: 40px;
-    margin-top: 20px;
-    padding: 16px;
+@media (max-width: 600px) {
+  .main-bottom input {
+    flex: none;
+    width: 150px;
   }
 
-  .main .card {
-    height: 160px;
-  }
-
-  /* On smaller screens, let bottom bar flow normally
-     so it doesn't overlap content badly */
-  .main-bottom {
-    position: static;
-    transform: none;
-    margin-top: 10px;
-    padding: 0 16px 20px;
-  }
-}
-
-@media (max-width: 500px) {
-  .main .greet {
-    font-size: 32px;
+  .main-bottom img {
+    width: 20px;
   }
 
   .search-box {
-    padding: 10px 16px;
-    gap: 12px;
+    padding: 5px 10px;
   }
 
-  .search-box input {
-    font-size: 16px;
+  .search-boxdiv {
+    gap: 5px;
   }
 }
