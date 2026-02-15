@@ -12,19 +12,23 @@
 }
 
 /* Sidebar container (left) */
-.app > :first-child {
+.app> :first-child {
   flex-shrink: 0;
-  width: 260px;                 /* default desktop width */
-  max-width: 260px;
-  min-width: 240px;
+  width: 280px;
+  /* Expanded width */
+  max-width: 280px;
+  min-width: 80px;
+  /* Collapsed width (just icons) */
   background: #f0f4f9;
-  border-right: 1px solid #e2e6eb;
-  transition: width 0.3s ease, transform 0.3s ease;
-  will-change: width, transform;
+  /* Gemini Sidebar Color */
+  /* border-right: none;           Gemini often has no heavy border, just background diff */
+  transition: width 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+  /* Smoother bezier */
+  will-change: width;
 }
 
 /* Main content container (right) */
-.app > :last-child {
+.app> :last-child {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
@@ -38,7 +42,7 @@
 
 /* Medium screens: Sidebar slightly smaller */
 @media (max-width: 1024px) {
-  .app > :first-child {
+  .app> :first-child {
     width: 220px;
     min-width: 220px;
   }
@@ -46,7 +50,7 @@
 
 /* Tablets: Sidebar collapses to icon-only */
 @media (max-width: 768px) {
-  .app > :first-child {
+  .app> :first-child {
     width: 70px !important;
     min-width: 70px !important;
     padding-left: 8px;
@@ -60,7 +64,7 @@
     flex-direction: column;
   }
 
-  .app > :first-child {
+  .app> :first-child {
     width: 100%;
     max-width: 100%;
     min-width: 100%;
@@ -69,7 +73,7 @@
     top: 0;
     left: 0;
     z-index: 99;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
   }
 
   /* You can toggle this with JS when opening menu */
@@ -77,7 +81,7 @@
     transform: translateY(0) !important;
   }
 
-  .app > :last-child {
+  .app> :last-child {
     flex: 1;
     overflow-y: auto;
   }

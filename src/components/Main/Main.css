@@ -4,46 +4,69 @@
 .main {
   flex: 1;
   min-height: 100vh;
-  padding-bottom: 15vh;
+  padding-bottom: 20px;
   position: relative;
   background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
 }
 
 .main .nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 22px;
-  padding: 20px;
+  padding: 18px 24px;
   color: #585858;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+}
+
+.main .nav p {
+  font-size: 20px;
+  color: #5f6368;
+  font-weight: 500;
 }
 
 .main .nav img {
-  width: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
+  object-fit: cover;
 }
 
 .main-container {
   max-width: 900px;
-  margin: auto;
-  padding: 0 20px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 /* ------------------------------------------------------
    GREETING SECTION
 ------------------------------------------------------ */
 .main .greet {
-  margin: 50px 0px;
+  margin: 40px 0 60px;
   font-size: 56px;
   color: #c4c7c5;
   font-weight: 500;
-  padding: 20px;
+  line-height: 1.2;
 }
 
 .main .greet span {
   background: -webkit-linear-gradient(16deg, #4b90ff, #ff5546);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.main .greet p:last-child {
+  color: #c4c7c5;
 }
 
 /* ------------------------------------------------------
@@ -51,153 +74,94 @@
 ------------------------------------------------------ */
 .main .cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 15px;
-  padding: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
 }
 
 .main .card {
   height: 200px;
-  padding: 15px;
+  padding: 16px;
   background-color: #f0f4f9;
-  border-radius: 10px;
+  border-radius: 12px;
   position: relative;
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.2s ease;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .main .card:hover {
   background-color: #dfe4ea;
-  transform: translateY(-2px);
-}
-
-.main .card img {
-  width: 35px;
-  padding: 5px;
-  position: absolute;
-  background-color: white;
-  border-radius: 20px;
-  bottom: 10px;
-  right: 10px;
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .main .card p {
-  color: #585858;
-  font-size: 17px;
+  color: #1f1f1f;
+  font-size: 16px;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+.main .card img {
+  width: 40px;
+  height: 40px;
+  padding: 8px;
+  background-color: #fff;
+  border-radius: 50%;
+  align-self: flex-end;
+  /* Align icon to bottom right */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 /* ------------------------------------------------------
-   BOTTOM INPUT SECTION
+   BOTTOM SECTION (Footer info)
 ------------------------------------------------------ */
 .main-bottom {
-  position: absolute;
-  bottom: 0;
+  /* This container holds composer + disclaimer */
   width: 100%;
   max-width: 900px;
-  padding: 0px 20px;
+  padding: 0;
   margin: auto;
-  background-color: #ffffff;
-  /* Ensure background covers content behind */
+  /* Center it */
+  margin-top: auto;
+  /* Push to bottom if content is short */
 }
 
-.search-box {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  background-color: #f0f4f9;
-  padding: 10px 20px;
-  border-radius: 50px;
-  position: relative;
-  /* For image preview absolute positioning */
-}
-
-.search-box img {
-  width: 24px;
-  cursor: pointer;
-}
-
-.search-box input {
-  flex: 1;
-  background: transparent;
-  border: none;
-  outline: none;
-  padding: 8px;
-  font-size: 18px;
-}
-
-.search-boxdiv {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
+/* Disclaimer text */
 .main .bottom-info {
-  font-size: 13px;
-  margin: 15px auto;
+  font-size: 12px;
+  margin: 16px auto 0;
+  /* Add top margin */
   text-align: center;
-  font-weight: 300;
-  color: #585858;
-}
-
-/* ------------------------------------------------------
-   IMAGE PREVIEW (NEW)
------------------------------------------------------- */
-.image-preview {
-  position: absolute;
-  bottom: 70px;
-  /* Adjusted to sit above the input bar */
-  left: 0;
-  background: #f0f4f9;
-  padding: 10px;
-  border-radius: 10px;
-  display: flex;
-  align-items: flex-start;
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
-}
-
-.image-preview img {
-  max-width: 120px;
-  max-height: 120px;
-  border-radius: 8px;
-  object-fit: cover;
-}
-
-.image-preview span {
-  margin-left: 10px;
-  cursor: pointer;
-  font-size: 20px;
-  color: #666;
-  font-weight: bold;
-}
-
-.message-image {
-  max-width: 100%;
-  max-height: 300px;
-  border-radius: 12px;
-  margin-bottom: 10px;
-  display: block;
-  object-fit: contain;
+  font-weight: 400;
+  color: #444746;
+  max-width: 600px;
 }
 
 /* ------------------------------------------------------
    RESPONSIVE
 ------------------------------------------------------ */
 @media (max-width: 600px) {
-  .main-bottom input {
-    flex: none;
-    width: 150px;
+  .main .greet {
+    font-size: 36px;
+    margin: 20px 0 40px;
   }
 
-  .main-bottom img {
-    width: 20px;
+  /* Horizontal scroll for cards on mobile */
+  .main .cards {
+    display: flex;
+    overflow-x: auto;
+    padding-bottom: 10px;
+    scroll-snap-type: x mandatory;
+    gap: 12px;
   }
 
-  .search-box {
-    padding: 5px 10px;
-  }
-
-  .search-boxdiv {
-    gap: 5px;
+  .main .card {
+    min-width: 180px;
+    width: 180px;
+    height: 160px;
+    scroll-snap-align: start;
   }
 }

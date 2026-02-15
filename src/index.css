@@ -1,7 +1,7 @@
 /* ------------------------------------------------------
    FONT IMPORT
 ------------------------------------------------------ */
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap');
 
 /* ------------------------------------------------------
    RESET + BASE STYLES
@@ -15,30 +15,29 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Base typography */
 html {
-  scroll-behavior: smooth;
   font-size: 16px;
+  scroll-behavior: smooth;
 }
 
 body {
   background-color: #ffffff;
-  color: #1a1a1a;
+  color: #1f1f1f; /* Slightly softer than pure black */
   overflow-x: hidden;
   -webkit-tap-highlight-color: transparent;
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
 /* Remove ugly outlines but keep accessibility */
 *:focus-visible {
-  outline: 2px solid #4b90ff;
+  outline: 2px solid #0055cc;
   outline-offset: 2px;
 }
 
 /* Text selection color */
 ::selection {
-  background: rgba(75, 144, 255, 0.2);
-  color: inherit;
+  background: #d3e3fd;
+  color: #0b57d0;
 }
 
 /* ------------------------------------------------------
@@ -52,20 +51,11 @@ body {
 }
 
 /* ------------------------------------------------------
-   GLOBAL TRANSITIONS (for future dark mode etc.)
------------------------------------------------------- */
-body,
-.sidebar,
-.main {
-  transition: background 0.3s ease, color 0.3s ease;
-}
-
-/* ------------------------------------------------------
    SCROLLBAR (WEBKIT) – subtle Gemini-like
 ------------------------------------------------------ */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
@@ -73,10 +63,14 @@ body,
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.7);
-  border-radius: 999px;
+  background: #dfe4ea;
+  border-radius: 5px;
+  border: 2px solid transparent; /* Creates padding effect */
+  background-clip: content-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 116, 139, 0.9);
+  background: #c7cdd5;
+  border: 2px solid transparent;
+  background-clip: content-box;
 }

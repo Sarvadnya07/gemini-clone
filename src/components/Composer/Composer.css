@@ -1,103 +1,112 @@
 .composer {
-  padding: 12px 16px;
-  border-top: 1px solid var(--border, #e6e6e6);
-  background: var(--composer-bg, #fff);
+  padding: 10px;
+  width: 100%;
+  background-color: #f0f4f9;
+  border-radius: 32px;
+  /* No top border needed if it's a floating pill style */
+  display: flex;
+  flex-direction: column;
 }
 
 .composer.drag-over {
-  border-top: 2px dashed var(--primary, #0b67ff);
-  background: rgba(11, 103, 255, 0.03);
+  background-color: #e2e8f0;
+  outline: 2px dashed #0b67ff;
 }
 
 .composer-row {
   display: flex;
-  gap: 8px;
-  align-items: flex-end;
+  align-items: center;
+  /* Vertically center textarea and buttons */
+  gap: 12px;
+  width: 100%;
 }
 
 .composer-textarea {
-  flex: 1 1 auto;
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: 1px solid var(--border, #ddd);
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 12px;
+  font-size: 16px;
+  color: #1f1f1f;
   resize: none;
-  font-size: 14px;
+  max-height: 150px;
+  /* Limit expansion */
+  font-family: inherit;
+}
+
+.composer-textarea::placeholder {
+  color: #5f6368;
 }
 
 .composer-actions {
   display: flex;
-  gap: 8px;
   align-items: center;
+  gap: 8px;
+  padding-right: 8px;
 }
 
 .composer-icon-btn {
-  background: transparent;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
   border: none;
-  padding: 6px;
+  background: transparent;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.composer-icon-btn:hover {
+  background-color: #dfe4ea;
+}
+
+.composer-icon-btn img {
+  width: 24px;
+  height: 24px;
+  opacity: 0.7;
 }
 
 .composer-send-btn {
-  background: var(--primary, #0b67ff);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
   border: none;
-  padding: 8px;
-  border-radius: 8px;
+  background: transparent;
   cursor: pointer;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
+  transition: background-color 0.2s;
+}
+
+/* Only show background for send button if there is input, or just keep it simple */
+.composer-send-btn img {
+  width: 24px;
+  height: 24px;
+}
+
+.composer-send-btn:not([disabled]):hover {
+  background-color: #dfe4ea;
 }
 
 .composer-send-btn[disabled] {
-  opacity: 0.5;
-  cursor: not-allowed;
+  opacity: 0.4;
+  cursor: default;
 }
 
-.composer-image-preview {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.composer-image-preview img {
-  max-height: 64px;
-  border-radius: 6px;
-}
-
-.composer-image-remove {
-  background: transparent;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-}
-
+/* Image preview styling within composer */
 .composer-image-preview-multi {
   display: flex;
   gap: 8px;
   margin-bottom: 8px;
-}
-
-.composer-image-item {
-  position: relative;
+  padding: 4px;
+  overflow-x: auto;
 }
 
 .composer-image-item img {
-  height: 64px;
-  border-radius: 6px;
-  object-fit: cover;
-}
-
-.composer-image-item .composer-image-remove {
-  position: absolute;
-  top: -6px;
-  right: -6px;
-  background: rgba(0,0,0,0.6);
-  color: #fff;
-  border-radius: 50%;
-  width: 22px;
-  height: 22px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  height: 50px;
+  border-radius: 8px;
 }
