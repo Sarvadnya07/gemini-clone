@@ -1,0 +1,29 @@
+{
+  "root": true,
+  "env": {
+    "browser": true,
+    "es2021": true
+  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:react/recommended"
+  ],
+  "parserOptions": {
+    "ecmaVersion": 2021,
+    "sourceType": "module",
+    "ecmaFeatures": { "jsx": true }
+  },
+  "settings": {
+    "react": { "version": "detect" }
+  },
+  "overrides": [
+    {
+      "files": ["server.js", "gemini.js", "debug_gemini.js", "dotenv.js", "test_models.js"],
+      "env": { "node": true }
+    },
+    {
+      "files": ["src/__tests__/**", "**/*.test.{js,jsx}"],
+      "env": { "vitest": true, "jest": true }
+    }
+  ]
+}

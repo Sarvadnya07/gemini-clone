@@ -1,0 +1,49 @@
+/* ------------------------------------------------------------
+   APP LAYOUT (Sidebar + Main)
+------------------------------------------------------------ */
+.app {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  min-height: 100vh;
+  overflow: hidden;
+  background: #0e0e10;
+}
+
+/* Main content fills remaining space */
+.main {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ------------------------------------------------------------
+   RESPONSIVE BEHAVIOUR
+------------------------------------------------------------ */
+
+/* Mobile overlay backdrop */
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 98;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+}
+
+/* Mobile sidebar wrapper */
+.mobile-sidebar-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  z-index: 99;
+  animation: slideInLeft 0.25s ease-out;
+}
+
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}

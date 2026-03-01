@@ -1,0 +1,323 @@
+/* ------------------------------------------------------
+   MESSAGE — Dark Gemini Theme
+------------------------------------------------------ */
+.message {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 28px;
+  width: 100%;
+}
+
+/* Avatar */
+.message-avatar {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.avatar-user {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8e9196;
+}
+
+/* Gemini Star */
+.gemini-star {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gemini-star-loading svg {
+  animation: geminiPulse 2s ease-in-out infinite;
+}
+
+@keyframes geminiPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.15); opacity: 0.7; }
+}
+
+/* Message Body */
+.message-body {
+  flex: 1;
+  font-size: 16px;
+  line-height: 1.7;
+  color: #e3e3e8;
+  overflow-x: auto;
+  min-width: 0;
+}
+
+/* User Message */
+.message.user {
+  flex-direction: row-reverse;
+}
+
+.message.user .message-body {
+  flex: 0 1 auto;
+  max-width: 80%;
+}
+
+.user-text {
+  background-color: rgba(255, 255, 255, 0.06);
+  padding: 12px 18px;
+  border-radius: 20px;
+  border-top-right-radius: 4px;
+  color: #e3e3e8;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+/* Assistant Message */
+.message.assistant .message-body {
+  padding-top: 2px;
+}
+
+/* Attachments */
+.message-attachments {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.message-image {
+  max-width: 300px;
+  max-height: 300px;
+  border-radius: 12px;
+  object-fit: contain;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.message-image:hover {
+  opacity: 0.85;
+}
+
+/* Skeleton Loading */
+.message-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 500px;
+}
+
+.message-skeleton .s-line {
+  height: 14px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%);
+  background-size: 200% 100%;
+  border-radius: 6px;
+  animation: shimmer 1.5s infinite linear;
+}
+
+.message-skeleton .s-line.short {
+  width: 70%;
+}
+
+.message-skeleton .s-line.shorter {
+  width: 40%;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ------------------------------------------------------
+   MARKDOWN BODY — Dark Theme
+------------------------------------------------------ */
+.markdown-body {
+  color: #e3e3e8;
+}
+
+.markdown-body p {
+  margin-bottom: 1em;
+}
+
+.markdown-body p:last-child {
+  margin-bottom: 0;
+}
+
+.markdown-body ul,
+.markdown-body ol {
+  margin-bottom: 1em;
+  padding-left: 24px;
+}
+
+.markdown-body li {
+  margin-bottom: 0.5em;
+}
+
+.markdown-body h1, .markdown-body h2, .markdown-body h3,
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  color: #f0f0f5;
+  margin: 1.2em 0 0.6em;
+  font-weight: 600;
+}
+
+.markdown-body h1 { font-size: 1.6em; }
+.markdown-body h2 { font-size: 1.4em; }
+.markdown-body h3 { font-size: 1.2em; }
+
+.markdown-body a {
+  color: #8ab4f8;
+  text-decoration: none;
+}
+
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+
+.markdown-body blockquote {
+  border-left: 3px solid rgba(66, 133, 244, 0.4);
+  padding-left: 16px;
+  margin: 1em 0;
+  color: #aab0b7;
+}
+
+.markdown-body hr {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin: 1.5em 0;
+}
+
+.markdown-body table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+}
+
+.markdown-body th, .markdown-body td {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.markdown-body th {
+  background: rgba(255, 255, 255, 0.04);
+  font-weight: 600;
+  color: #f0f0f5;
+}
+
+/* Inline code */
+.markdown-body code {
+  font-family: 'Fira Code', 'JetBrains Mono', 'Consolas', monospace;
+  background-color: rgba(255, 255, 255, 0.06);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  color: #e8b4b8;
+}
+
+.markdown-body pre code {
+  background-color: transparent;
+  padding: 0;
+  color: inherit;
+}
+
+/* Code block wrapper */
+.code-block-wrapper {
+  margin: 16px 0;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.code-block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.code-block-lang {
+  font-size: 12px;
+  font-weight: 500;
+  color: #8e9196;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.code-block-copy {
+  font-size: 12px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  padding: 4px 10px;
+  color: #8e9196;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.code-block-copy:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #c4c7c5;
+}
+
+/* ------------------------------------------------------
+   MESSAGE ACTIONS
+------------------------------------------------------ */
+.message-actions {
+  display: flex;
+  gap: 4px;
+  margin-top: 8px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.message:hover .message-actions {
+  opacity: 1;
+}
+
+.message-actions button {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #6b6f75;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.message-actions button:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #c4c7c5;
+}
+
+/* User message actions on the left side */
+.message.user .message-actions {
+  justify-content: flex-end;
+}
+
+/* ------------------------------------------------------
+   RESPONSIVE
+------------------------------------------------------ */
+@media (max-width: 600px) {
+  .message {
+    gap: 10px;
+  }
+
+  .message.user .message-body {
+    max-width: 90%;
+  }
+
+  .user-text {
+    padding: 10px 14px;
+    font-size: 15px;
+  }
+}

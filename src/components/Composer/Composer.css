@@ -1,0 +1,177 @@
+/* ------------------------------------------------------
+   COMPOSER — Dark Floating Omnibox
+------------------------------------------------------ */
+.composer {
+  padding: 8px 12px;
+  width: 100%;
+  background-color: #1e1f20;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 28px;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.composer:focus-within {
+  border-color: rgba(66, 133, 244, 0.3);
+  box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.08);
+}
+
+.composer.drag-over {
+  border-color: #4285f4;
+  background-color: rgba(66, 133, 244, 0.05);
+}
+
+/* Input row */
+.composer-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  width: 100%;
+}
+
+/* Textarea */
+.composer-textarea {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 10px 8px;
+  font-size: 16px;
+  color: #e3e3e8;
+  resize: none;
+  max-height: 208px;
+  font-family: inherit;
+  line-height: 1.5;
+  overflow-y: auto;
+}
+
+.composer-textarea::placeholder {
+  color: #5f6368;
+}
+
+/* Icon buttons */
+.composer-icon-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: #8e9196;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.composer-icon-btn:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #c4c7c5;
+}
+
+.composer-icon-btn.listening {
+  color: #ea4335;
+  animation: pulse-mic 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-mic {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Send button */
+.composer-send-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.06);
+  color: #5f6368;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.composer-send-btn.active {
+  background: #4285f4;
+  color: #fff;
+}
+
+.composer-send-btn.active:hover {
+  background: #5a9bf5;
+}
+
+.composer-send-btn[disabled] {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* Attachments preview */
+.composer-attachments {
+  display: flex;
+  gap: 8px;
+  padding: 8px 4px 4px;
+  overflow-x: auto;
+  flex-wrap: wrap;
+}
+
+.composer-att-item {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.composer-att-item img {
+  height: 56px;
+  border-radius: 10px;
+  object-fit: cover;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.composer-file-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  color: #c4c7c5;
+  font-size: 13px;
+}
+
+.composer-att-remove {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: none;
+  background: #2a2b2e;
+  color: #8e9196;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.composer-att-remove:hover {
+  background: #ea4335;
+  color: #fff;
+}
+
+/* ------------------------------------------------------
+   RESPONSIVE
+------------------------------------------------------ */
+@media (max-width: 480px) {
+  .composer {
+    border-radius: 20px;
+    padding: 6px 8px;
+  }
+}

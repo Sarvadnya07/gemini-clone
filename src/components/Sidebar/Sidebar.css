@@ -1,0 +1,264 @@
+/* ------------------------------------------------------
+   SIDEBAR — Dark Gemini Theme
+------------------------------------------------------ */
+.sidebar {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background-color: #1e1f20;
+  padding: 16px 8px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ------------------------------------------------------
+   TOP SECTION
+------------------------------------------------------ */
+.sidebar-top {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
+.sidebar-menu-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: #aab0b7;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin: 0 auto 4px;
+  flex-shrink: 0;
+}
+
+.sidebar-menu-btn:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+/* ------------------------------------------------------
+   NEW CHAT BUTTON
+------------------------------------------------------ */
+.sidebar-new-chat {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background-color: rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  color: #c4c7c5;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin: 8px 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.sidebar-new-chat:hover {
+  background-color: rgba(255, 255, 255, 0.14);
+}
+
+.sidebar-label {
+  white-space: nowrap;
+  overflow: hidden;
+  display: inline-block;
+}
+
+/* ------------------------------------------------------
+   RECENT CHATS
+------------------------------------------------------ */
+.sidebar-recent {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.sidebar-recent-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #8e9196;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 8px 14px 4px;
+}
+
+.sidebar-search {
+  padding: 4px 8px;
+}
+
+.sidebar-search input {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: #e3e3e8;
+  font-size: 13px;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+
+.sidebar-search input::placeholder {
+  color: #6b6f75;
+}
+
+.sidebar-search input:focus {
+  border-color: #4285f4;
+}
+
+.sidebar-recent-list {
+  flex: 1;
+  overflow-y: auto;
+  position: relative;
+  padding-bottom: 40px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+.sidebar-recent-fade {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 40px;
+  background: linear-gradient(to bottom, transparent, #1e1f20);
+  pointer-events: none;
+}
+
+/* ------------------------------------------------------
+   CHAT ENTRY
+------------------------------------------------------ */
+.sidebar-entry {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 16px;
+  color: #c4c7c5;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.15s;
+  position: relative;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.sidebar-entry:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-entry.active {
+  background-color: rgba(66, 133, 244, 0.15);
+  color: #c2e7ff;
+}
+
+.sidebar-entry.pinned {
+  border-left: 2px solid #4285f4;
+}
+
+.sidebar-entry-icon {
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+
+.sidebar-entry-text {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Actions - appear on hover */
+.sidebar-entry-actions {
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.15s;
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #1e1f20;
+  padding-left: 4px;
+}
+
+.sidebar-entry:hover .sidebar-entry-actions {
+  opacity: 1;
+}
+
+.sidebar-entry-actions button {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: #8e9196;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.sidebar-entry-actions button:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+  color: #e3e3e8;
+}
+
+/* ------------------------------------------------------
+   BOTTOM SECTION
+------------------------------------------------------ */
+.sidebar-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex-shrink: 0;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.sidebar-bottom-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 16px;
+  border: none;
+  background: transparent;
+  color: #8e9196;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: inherit;
+  transition: all 0.15s;
+  white-space: nowrap;
+  overflow: hidden;
+  width: 100%;
+  text-align: left;
+}
+
+.sidebar-bottom-item:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #c4c7c5;
+}
+
+/* ------------------------------------------------------
+   RESPONSIVE
+------------------------------------------------------ */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 260px !important;
+  }
+}

@@ -1,0 +1,143 @@
+/* Lightbox — Dark Theme */
+.lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.lightbox-inner {
+  background: #1e1f20;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 16px;
+  border-radius: 16px;
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.lightbox-media {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lightbox-image {
+  max-width: 86vw;
+  max-height: 76vh;
+  border-radius: 10px;
+  object-fit: contain;
+}
+
+.lightbox-audio {
+  width: 100%;
+  min-width: 300px;
+}
+
+.lightbox-video {
+  max-width: 86vw;
+  max-height: 76vh;
+  border-radius: 10px;
+}
+
+.lightbox-file-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 32px;
+  color: #c4c7c5;
+}
+
+.lightbox-file-icon {
+  font-size: 40px;
+}
+
+.lightbox-file-name {
+  font-size: 14px;
+  color: #8e9196;
+}
+
+.lightbox-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.lightbox-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.lightbox-nav button {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  color: #c4c7c5;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: all 0.15s;
+}
+
+.lightbox-nav button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.lightbox-nav button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.lightbox-counter {
+  font-size: 13px;
+  color: #6b6f75;
+}
+
+.lightbox-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.lightbox-download {
+  background: #4285f4;
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  transition: background 0.15s;
+}
+
+.lightbox-download:hover {
+  background: #5a9bf5;
+}
+
+.lightbox-close {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #c4c7c5;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+
+.lightbox-close:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
