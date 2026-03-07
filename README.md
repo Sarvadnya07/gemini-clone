@@ -2,7 +2,7 @@
 
 A production-grade AI chat interface inspired by **Google Gemini**. This project features a modern, responsive React frontend powered by a secure Node.js backend that interfaces with the **Google Generative AI (Gemini) SDK**.
 
-Built with ❤️ by **Sarvadnya Suneet Sonkambale**.
+Built with ❤️ by **Sarvadnya**.
 
 ---
 
