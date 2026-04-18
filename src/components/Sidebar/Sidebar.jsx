@@ -1,9 +1,11 @@
-import { useState, useCallback, useContext, useRef, useEffect } from 'react';
+import { useState, useContext, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import PropTypes from 'prop-types';
 import './Sidebar.css';
 import { Context } from '../../context/context';
 
 const Sidebar = ({ extended, onToggleSidebar }) => {
+
   const [filter, setFilter] = useState('');
   const {
     prevPrompts,
@@ -12,14 +14,13 @@ const Sidebar = ({ extended, onToggleSidebar }) => {
     setShowSettings,
     setShowHelp,
     setShowActivity,
-    setShowAccount,
     renameConversation,
     deleteConversation,
     pinConversation,
     currentChatId,
-    user,
     isSyncing
   } = useContext(Context);
+
 
   const recentRef = useRef(null);
 
@@ -212,4 +213,10 @@ const Sidebar = ({ extended, onToggleSidebar }) => {
   );
 };
 
+Sidebar.propTypes = {
+  extended: PropTypes.bool.isRequired,
+  onToggleSidebar: PropTypes.func.isRequired,
+};
+
 export default Sidebar;
+

@@ -154,7 +154,6 @@ app.post("/api/chat/stream", chatLimiter, validateChatInput, async (req, res) =>
       ];
       for (const chunk of simulated) {
         res.write(chunk);
-        // eslint-disable-next-line no-await-in-loop
         await new Promise((resolve) => setTimeout(resolve, 250));
       }
       res.end();

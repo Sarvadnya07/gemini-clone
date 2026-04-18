@@ -8,7 +8,7 @@ export default [
   { ignores: ['dist'] },
   // Node-specific files (server scripts) — treat as node environment
   {
-    files: ['server.js', 'gemini.js', 'debug_gemini.js', 'dotenv.js', 'test_models.js'],
+    files: ['server.js', 'gemini.js', 'debug_gemini.js', 'dotenv.js', 'test_models.js', 'middleware/**', 'models/**', 'utils/**'],
     languageOptions: {
       globals: globals.node,
       parserOptions: { ecmaVersion: 'latest' },

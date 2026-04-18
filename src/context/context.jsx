@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import React, { createContext, useCallback, useState, useEffect } from 'react';
+import { createContext, useCallback, useState, useEffect } from 'react';
 import { streamChat } from '../api/client';
 import { checkContent } from '../utils/moderation';
 import { logEvent } from '../utils/analytics';
@@ -93,8 +93,8 @@ const ContextProvider = ({ children }) => {
     try {
       const savedPrompts = localStorage.getItem('gemini_prevPrompts');
       if (savedPrompts) setPrevPrompts(JSON.parse(savedPrompts));
-    } catch (e) {
-      console.error('Local history failed', e);
+    } catch {
+      console.error('Local history failed');
     }
   };
 
@@ -111,8 +111,8 @@ const ContextProvider = ({ children }) => {
           },
           body: JSON.stringify({ id: chatId, title, messages, pinned })
         });
-      } catch (e) {
-        console.warn('Background sync failed', e);
+      } catch (err) {
+        console.warn('Background sync failed', err);
       }
     } else {
       localStorage.setItem(`gemini_chat_${chatId}`, JSON.stringify(messages));
@@ -125,7 +125,7 @@ const ContextProvider = ({ children }) => {
     try {
       const savedTemplates = localStorage.getItem('gemini_templates');
       if (savedTemplates) setTemplates(JSON.parse(savedTemplates));
-    } catch (e) { /* ignore */ }
+    } catch { /* ignore */ }
   }, []);
 
 
@@ -355,7 +355,7 @@ const ContextProvider = ({ children }) => {
         setLoading(false);
       }
     },
-    [input, loading, currentChatId, saveHistory, attachments, config]
+    [input, loading, currentChatId, saveHistory, attachments, config, persistChat]
   );
 
     // Retry helper: resend the last user prompt that preceded a given assistant message

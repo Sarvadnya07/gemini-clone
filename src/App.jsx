@@ -50,7 +50,7 @@ const App = () => {
       {/* Help Modal */}
       <Modal isOpen={showHelp} onClose={() => setShowHelp(false)} title="Help & Support">
         <div className="help-content">
-          <p>Welcome to Gemini Clone! Here you can interact with Google's advanced AI models.</p>
+          <p>Welcome to Gemini Clone! Here you can interact with Google&apos;s advanced AI models.</p>
           <ul style={{ paddingLeft: '20px', marginTop: '10px' }}>
             <li><b>Voice Input:</b> Click the microphone to speak your prompt.</li>
             <li><b>Attachments:</b> Upload images or files for multi-modal analysis.</li>

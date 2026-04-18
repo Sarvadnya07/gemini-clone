@@ -1,4 +1,5 @@
 import { useContext, useMemo, useRef, useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
 import { motion, AnimatePresence } from 'framer-motion';
 import './Main.css';
 import { Context } from '../../context/context';
@@ -225,4 +226,9 @@ const Main = ({ onToggleSidebar }) => {
   );
 };
 
+Main.propTypes = {
+  onToggleSidebar: PropTypes.func.isRequired,
+};
+
 export default Main;
+

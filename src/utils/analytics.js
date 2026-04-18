@@ -9,10 +9,8 @@ export function logEvent(name, payload = {}) {
     arr.push(entry);
     localStorage.setItem(EVENTS_KEY, JSON.stringify(arr));
     // Also console.log for convenience
-    // eslint-disable-next-line no-console
     console.log('[analytics]', entry);
   } catch (e) {
-    // eslint-disable-next-line no-console
     console.warn('Failed to log analytics event', e);
   }
 }

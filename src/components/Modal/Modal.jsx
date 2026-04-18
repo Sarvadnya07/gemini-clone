@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
+import PropTypes from 'prop-types';
 import './Modal.css';
 
 const Modal = ({ isOpen, onClose, title, children }) => {
@@ -30,4 +31,12 @@ const Modal = ({ isOpen, onClose, title, children }) => {
   );
 };
 
+Modal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  title: PropTypes.string.isRequired,
+  children: PropTypes.node.isRequired,
+};
+
 export default Modal;
+
