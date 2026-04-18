@@ -1,4 +1,5 @@
-# Gemini Clone - AI Assistant
+
+# 🚀 Gemini Clone — Pro AI Assistant
 
 ![Gemini Clone Banner](./Gemini.png)
 
@@ -9,128 +10,135 @@
 [![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![Gemini API](https://img.shields.io/badge/Gemini_API-4285F4?style=flat&logo=google&logoColor=white)](https://ai.google.dev/)
 
-Live Link: [https://gemini-clone-mu-lyart.vercel.app/](https://gemini-clone-mu-lyart.vercel.app/)
+🔗 **Live Link:** [https://gemini-clone-mu-lyart.vercel.app/](https://gemini-clone-mu-lyart.vercel.app/)
 
-Gemini Clone is a full-stack AI chat application inspired by Google Gemini. It includes a React + Vite frontend, a secure Express backend proxy, voice features, markdown rendering, and optional Firebase/MongoDB integrations.
+A state-of-the-art AI chat interface inspired by **Google Gemini**. This project delivers a premium user experience with fluid animations, multi-modal capabilities, and a secure backend architecture.
 
-## Features
+Developed with precision for high-performance AI interactions.
 
-- Clean, responsive chat interface with animated interactions
-- Voice input and speech output support
-- Markdown and code block rendering for AI responses
-- File/image attachment handling in chat flow
-- Backend API proxy to keep Gemini credentials server-side
-- Rate limiting and security middleware on server routes
+---
 
-## Tech Stack
+## ✨ Key Features
+
+- **🎨 Premium UI/UX:** A sleek, dark-themed interface built with **Vanilla CSS** and **Framer Motion** for butter-smooth transitions.
+- **🎙️ Voice Integration:** Full support for **Speech-to-Text** input and integrated **Text-to-Speech** capabilities.
+- **📎 Multi-modal Support:** Seamlessly upload and analyze images and files (up to 5MB) directly in the chat.
+- **🧠 Advanced Model Selection:** Switch between different Gemini models (Flash, Pro) on the fly via the built-in selector.
+- **📱 True Responsive Design:** Optimized for every screen size, from mobile devices to ultra-wide monitors.
+- **🔐 Secure Proxy Backend:** All API requests are proxied through a Node.js server, keeping your **Gemini API Key** safe and hidden from the client browser.
+- **📝 Markdown & Code Highlighting:** Rich text rendering with syntax highlighting for code blocks.
+- **⚡ Real-time Feedback:** Interactive suggested prompts and loading states to keep the experience engaging.
+
+---
+
+## 🛠️ Tech Stack
 
 ### Frontend
-
-- React 18
-- Vite
-- Framer Motion
-- React Markdown
-- React Syntax Highlighter
+- **React (Vite)** — Core framework for speed and modularity.
+- **Framer Motion** — Advanced animations and UI transitions.
+- **React Markdown** — High-fidelity response rendering.
+- **Web Speech API** — Native browser support for voice interactions.
 
 ### Backend
+- **Node.js & Express** — High-performance secure proxy layer.
+- **Google Generative AI SDK** — Deep integration with Gemini for cutting-edge LLM capabilities.
+- **Dotenv** — Secure environment variable management.
 
-- Node.js
-- Express
-- @google/generative-ai
-- Helmet, CORS, Morgan, Winston
-- Express Rate Limit
+---
 
-### Optional Integrations
-
-- Firebase (client + admin)
-- MongoDB (Mongoose)
-
-## Project Structure
+## 📂 Project Structure
 
 ```text
 gemini-clone/
-|-- src/                # Frontend source
-|-- public/             # Static assets
-|-- server.js           # Express server entry
-|-- gemini.js           # Gemini integration logic
-|-- .env.example        # Environment template
-|-- package.json        # Scripts and dependencies
+├── src/                    # React Frontend
+│   ├── components/         # Modular UI components (Sidebar, Main, Composer, etc.)
+│   ├── context/            # Global state management using Context API
+│   ├── assets/             # Brand identity and visual assets
+│   ├── api/                # Client-side API abstraction
+│   └── App.jsx             # Root application orchestrator
+├── server.js               # Node.js Express server (Proxy)
+├── gemini.js               # Gemini SDK configuration & logic
+├── .env                    # Environment secrets
+├── vite.config.js          # Build & Dev configuration
+└── package.json            # Dependency manifest
 ```
 
-## Getting Started
+---
 
-### 1. Install dependencies
+## ⚙️ Installation & Setup
 
+### 1. Clone & Install
 ```bash
+git clone https://github.com/your-username/gemini-clone.git
+cd gemini-clone
 npm install
 ```
 
-### 2. Configure environment
-
-Copy `.env.example` to `.env` and provide values for the variables you need.
-
-Minimum required for local chat:
+### 2. Configuration (`.env`)
+Create a `.env` file in the root directory and add your credentials:
 
 ```ini
-GEMINI_API_KEY=your_google_gemini_api_key_here
+# Gemini API Key from Google AI Studio
+GEMINI_API_KEY=your_google_api_key_here
+
+# Backend configuration
 PORT=5000
+
+# Frontend configuration
 VITE_API_BASE_URL=http://localhost:5000
 ```
 
-### 3. Run the app
+### 3. Run the Development Environment
+You'll need to run both the backend server and the frontend development server.
 
-Use two terminals during development:
-
-Terminal 1 (backend):
-
+**Terminal 1 (Backend):**
 ```bash
 npm run server
 ```
 
-Terminal 2 (frontend):
-
+**Terminal 2 (Frontend):**
 ```bash
 npm run dev
 ```
 
-## Available Scripts
+---
 
-- `npm run dev` - Start Vite development server
-- `npm run build` - Build frontend for production
-- `npm run preview` - Preview production build
-- `npm run server` - Start Express backend
-- `npm run start` - Start backend (same as `server`)
-- `npm run lint` - Run ESLint
-- `npm run test` - Run Vitest
-
-## API
+## 🔌 API Documentation
 
 ### `POST /api/chat`
+Proxies user prompts and attachments to the Google Gemini API.
 
-Sends user prompts (and optional attachments) to Gemini through the backend proxy.
-
-Example payload:
-
+**Request Body:**
 ```json
 {
-  "prompt": "Explain quantum entanglement in simple terms",
+  "prompt": "Explain the concept of quantum entanglement.",
   "attachments": [
     { "data": "data:image/png;base64,...", "name": "image.png" }
   ]
 }
 ```
 
-## Security Notes
+---
 
-- Keep `.env` out of version control
-- Do not expose `GEMINI_API_KEY` in frontend code
-- Restrict CORS origins in production via `ALLOWED_ORIGINS`
-- Configure Firebase/MongoDB credentials only if those modules are used
+## 🛡️ Security & Best Practices
 
-## License
+- **API Protection:** The server-side proxy prevents your Gemini API key from being exposed in public client-side network logs.
+- **Error Handling:** Implemented global catch-alls for network timeouts and API limit exhausts.
+- **Validation:** Sanity checks on file sizes (5MB limit) and prompt lengths to ensure stability.
 
-This project is licensed under the MIT License. See [LICENSE](./LICENSE).
+---
 
-## Author
+## 🎯 Future Roadmap
 
-[Sarvadnya](https://github.com/Sarvadnya07)
+- [ ] **Streaming Responses:** Real-time character-by-character typing effects.
+- [⌛] **User Authentication & Cloud Sync:** (Planned) Save and sync chat history across multiple devices using Firebase/MongoDB.
+- [ ] **Custom Themes:** User-selectable color palettes (Light, OLED Dark, Modern Blue).
+- [ ] **Plug-in System:** Extend capabilities with external tools like Search or Code Interpreter.
+
+---
+
+## 📜 License
+
+Distributed under the MIT License. See `LICENSE` for more information.
+
+**Author:** [Sarvadnya](https://github.com/Sarvadnya07)
