@@ -2,15 +2,19 @@
 
 ![Gemini Clone Banner](./gemini_clone_banner_1776520470700.png)
 
+[![Live Demo](https://img.shields.io/badge/Demo-Live-green?style=for-the-badge&logo=vercel)](https://gemini-clone-mu-lyart.vercel.app/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![React](https://img.shields.io/badge/React-20232A?style=flat&logo=react&logoColor=61DAFB)](https://reactjs.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
 [![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![Gemini API](https://img.shields.io/badge/Gemini_API-4285F4?style=flat&logo=google&logoColor=white)](https://ai.google.dev/)
 
+🔗 **Live Link:** [https://gemini-clone-mu-lyart.vercel.app/](https://gemini-clone-mu-lyart.vercel.app/)
+
 A state-of-the-art AI chat interface inspired by **Google Gemini**. This project delivers a premium user experience with fluid animations, multi-modal capabilities, and a secure backend architecture.
 
 Developed with precision for high-performance AI interactions.
+
 
 ---
 
@@ -127,9 +131,10 @@ Proxies user prompts and attachments to the Google Gemini API.
 ## 🎯 Future Roadmap
 
 - [ ] **Streaming Responses:** Real-time character-by-character typing effects.
-- [ ] **User Authentication:** Save and sync chat history across multiple devices.
+- [⌛] **User Authentication & Cloud Sync:** (Planned) Save and sync chat history across multiple devices using Firebase/MongoDB.
 - [ ] **Custom Themes:** User-selectable color palettes (Light, OLED Dark, Modern Blue).
 - [ ] **Plug-in System:** Extend capabilities with external tools like Search or Code Interpreter.
+
 
 ---
 
