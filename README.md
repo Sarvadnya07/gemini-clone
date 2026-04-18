@@ -1,6 +1,6 @@
 # 🚀 Gemini Clone — Pro AI Assistant
 
-![Gemini Clone Banner](./gemini_clone_banner_1776520470700.png)
+![Gemini Clone Banner](./Gemini.png)
 
 [![Live Demo](https://img.shields.io/badge/Demo-Live-green?style=for-the-badge&logo=vercel)](https://gemini-clone-mu-lyart.vercel.app/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
