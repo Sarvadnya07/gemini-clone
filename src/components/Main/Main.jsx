@@ -49,7 +49,8 @@ const SUGGESTED_CARDS = [
 ];
 
 const Main = ({ onToggleSidebar }) => {
-  const { setInput, onSent, messages, loading, config } = useContext(Context);
+  const { setInput, onSent, messages, loading, config, setShowAccount, user } = useContext(Context);
+
   const chatEndRef = useRef(null);
   const chatContainerRef = useRef(null);
   const [modelDropdown, setModelDropdown] = useState(false);
@@ -116,13 +117,20 @@ const Main = ({ onToggleSidebar }) => {
           </div>
         </div>
         <div className="main-nav-right">
-          <div className="user-avatar" aria-label="User profile">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-          </div>
+          <button className="user-avatar-btn" onClick={() => setShowAccount(true)} aria-label="User profile">
+            {user ? (
+              <img src={user.photoURL} alt={user.displayName} className="user-photo" />
+            ) : (
+              <div className="user-avatar">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+              </div>
+            )}
+          </button>
         </div>
+
       </header>
 
       {/* Main Content Area */}

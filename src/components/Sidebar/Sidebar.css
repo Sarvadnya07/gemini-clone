@@ -255,6 +255,32 @@
 }
 
 /* ------------------------------------------------------
+   SYNC INDICATOR
+------------------------------------------------------ */
+.sync-indicator {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #34a853;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.sync-indicator.syncing {
+  opacity: 1;
+  animation: pulse-sync 1.5s infinite;
+}
+
+@keyframes pulse-sync {
+  0% { transform: scale(0.8); opacity: 0.5; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(0.8); opacity: 0.5; }
+}
+
+/* ------------------------------------------------------
    RESPONSIVE
 ------------------------------------------------------ */
 @media (max-width: 768px) {
@@ -262,3 +288,4 @@
     width: 260px !important;
   }
 }
+

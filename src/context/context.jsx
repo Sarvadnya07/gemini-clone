@@ -3,6 +3,8 @@ import React, { createContext, useCallback, useState, useEffect } from 'react';
 import { streamChat } from '../api/client';
 import { checkContent } from '../utils/moderation';
 import { logEvent } from '../utils/analytics';
+import { onAuthChange, loginWithGoogle, logout } from '../config/firebase';
+
 
 export const Context = createContext();
 
@@ -16,11 +18,22 @@ const ContextProvider = ({ children }) => {
   const [templates, setTemplates] = useState([]); // Saved prompt templates
   const [currentChatId, setCurrentChatId] = useState(null);
   const [attachments, setAttachments] = useState([]); // [{ id, data }]
+  
+  // Modals & Navigation
   const [showSettings, setShowSettings] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
+  const [showActivity, setShowActivity] = useState(false);
+  const [showAccount, setShowAccount] = useState(false);
+
+  // User & Sync
+  const [user, setUser] = useState(null);
+  const [isSyncing, setIsSyncing] = useState(false);
+
   const [config, setConfig] = useState({
     model: "gemini-2.5-flash",
     temperature: 1.0
   });
+
 
   // Load config from localStorage
   useEffect(() => {
@@ -43,21 +56,78 @@ const ContextProvider = ({ children }) => {
     });
   }, []);
 
-  // Load from localStorage on mount
+  // Auth Listener
   useEffect(() => {
-    try {
-      const savedPrompts = localStorage.getItem('gemini_prevPrompts');
-      if (savedPrompts) {
-        setPrevPrompts(JSON.parse(savedPrompts));
+    const unsubscribe = onAuthChange((currentUser) => {
+      setUser(currentUser);
+      if (currentUser) {
+        logEvent('login', { method: 'firebase' });
+        fetchServerHistory(currentUser);
+      } else {
+        // Fallback to local storage if user logs out
+        loadLocalHistory();
       }
-      const savedTemplates = localStorage.getItem('gemini_templates');
-      if (savedTemplates) {
-        setTemplates(JSON.parse(savedTemplates));
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const fetchServerHistory = async (currentUser) => {
+    setIsSyncing(true);
+    try {
+      const token = await currentUser.getIdToken();
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/chats`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setPrevPrompts(data);
       }
     } catch (e) {
-      console.error('Failed to load history', e);
+      console.error('Server sync failed', e);
+    } finally {
+      setIsSyncing(false);
     }
+  };
+
+  const loadLocalHistory = () => {
+    try {
+      const savedPrompts = localStorage.getItem('gemini_prevPrompts');
+      if (savedPrompts) setPrevPrompts(JSON.parse(savedPrompts));
+    } catch (e) {
+      console.error('Local history failed', e);
+    }
+  };
+
+  // Save to persistence (Local OR Server)
+  const persistChat = useCallback(async (chatId, title, messages, pinned = false) => {
+    if (user) {
+      try {
+        const token = await user.getIdToken();
+        await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/chats`, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ id: chatId, title, messages, pinned })
+        });
+      } catch (e) {
+        console.warn('Background sync failed', e);
+      }
+    } else {
+      localStorage.setItem(`gemini_chat_${chatId}`, JSON.stringify(messages));
+    }
+  }, [user]);
+
+  // Load from LocalStorage on mount (Initial)
+  useEffect(() => {
+    loadLocalHistory();
+    try {
+      const savedTemplates = localStorage.getItem('gemini_templates');
+      if (savedTemplates) setTemplates(JSON.parse(savedTemplates));
+    } catch (e) { /* ignore */ }
   }, []);
+
 
   // Save to localStorage whenever prevPrompts changes
   const saveHistory = useCallback((prompts) => {
@@ -206,10 +276,10 @@ const ContextProvider = ({ children }) => {
 
       setMessages((prev) => {
         const updated = [...prev, userMsg];
-        // Save full chat content
-        localStorage.setItem(`gemini_chat_${chatId}`, JSON.stringify(updated));
+        persistChat(chatId, finalPrompt || 'Image Prompt', updated);
         return updated;
       });
+
 
   setInput('');
   setAttachments([]);
@@ -329,11 +399,21 @@ const ContextProvider = ({ children }) => {
     addTemplate,
     deleteTemplate,
     retryMessage,
-    config,
     updateConfig,
     showSettings,
-    setShowSettings
+    setShowSettings,
+    showHelp,
+    setShowHelp,
+    showActivity,
+    setShowActivity,
+    showAccount,
+    setShowAccount,
+    user,
+    loginWithGoogle,
+    logout,
+    isSyncing
   };
+
 
   return (
     <Context.Provider value={contextValue}>

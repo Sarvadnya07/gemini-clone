@@ -10,10 +10,15 @@ const Sidebar = ({ extended, onToggleSidebar }) => {
     newChat,
     loadChat,
     setShowSettings,
+    setShowHelp,
+    setShowActivity,
+    setShowAccount,
     renameConversation,
     deleteConversation,
     pinConversation,
     currentChatId,
+    user,
+    isSyncing
   } = useContext(Context);
 
   const recentRef = useRef(null);
@@ -158,7 +163,7 @@ const Sidebar = ({ extended, onToggleSidebar }) => {
 
       {/* Bottom items */}
       <div className="sidebar-bottom">
-        <button className="sidebar-bottom-item" aria-label="Help">
+        <button className="sidebar-bottom-item" onClick={() => setShowHelp(true)} aria-label="Help">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="10" />
             <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
@@ -173,7 +178,8 @@ const Sidebar = ({ extended, onToggleSidebar }) => {
           </AnimatePresence>
         </button>
 
-        <button className="sidebar-bottom-item" aria-label="Activity">
+        <button className="sidebar-bottom-item" onClick={() => setShowActivity(true)} aria-label="Activity">
+          <div className={`sync-indicator ${isSyncing ? 'syncing' : ''}`} />
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="10" />
             <polyline points="12 6 12 12 16 14" />
@@ -186,6 +192,7 @@ const Sidebar = ({ extended, onToggleSidebar }) => {
             )}
           </AnimatePresence>
         </button>
+
 
         <button className="sidebar-bottom-item" onClick={handleSettingsClick} aria-label="Settings">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
