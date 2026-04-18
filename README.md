@@ -1,45 +1,44 @@
-# 🚀 Gemini Clone — Full-Stack AI Chat App
+# 🚀 Gemini Clone — Pro AI Assistant
 
-A production-grade AI chat interface inspired by **Google Gemini**. This project features a modern, responsive React frontend powered by a secure Node.js backend that interfaces with the **Google Generative AI (Gemini) SDK**.
+![Gemini Clone Banner](./gemini_clone_banner_1776520470700.png)
 
-Built with ❤️ by **Sarvadnya**.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![React](https://img.shields.io/badge/React-20232A?style=flat&logo=react&logoColor=61DAFB)](https://reactjs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Gemini API](https://img.shields.io/badge/Gemini_API-4285F4?style=flat&logo=google&logoColor=white)](https://ai.google.dev/)
+
+A state-of-the-art AI chat interface inspired by **Google Gemini**. This project delivers a premium user experience with fluid animations, multi-modal capabilities, and a secure backend architecture.
+
+Developed with precision for high-performance AI interactions.
 
 ---
 
-## 📸 Screenshots
+## ✨ Key Features
 
-| Home Interface | Chat Experience | Sidebar Navigation |
-| :--- | :--- | :--- |
-| ![Home](./screenshots/home.png) | ![Chat](./screenshots/chat.png) | ![Sidebar](./screenshots/sidebar.png) |
-
----
-
-## 🌟 Key Features
-
-* **🎨 Gemini-Inspired UI:** A clean, minimalist interface with fluid animations and transitions.
-* **💬 Suggested Prompts:** Quick-start cards to help users interact with the AI immediately.
-* **🧠 Global State Management:** Built using the **React Context API** for seamless data flow across the app.
-* **📁 Persistent Sidebar:** Animated drawer for managing and viewing recent chat history.
-* **📱 Responsive Design:** Fully optimized for mobile, tablet, and desktop views.
-* **🔐 Secure Architecture:** A dedicated Node.js backend acts as a proxy to keep your **Gemini API Key** hidden from the client side.
-* **🎙️ Voice Features:** Integrated Web Speech API for voice-to-text input and SpeechSynthesis for text-to-speech output.
-* **🚦 Robust Error Handling:** Graceful UI fallbacks and clear messaging during API or network failures.
+- **🎨 Premium UI/UX:** A sleek, dark-themed interface built with **Vanilla CSS** and **Framer Motion** for butter-smooth transitions.
+- **🎙️ Voice Integration:** Full support for **Speech-to-Text** input and integrated **Text-to-Speech** capabilities.
+- **📎 Multi-modal Support:** Seamlessly upload and analyze images and files (up to 5MB) directly in the chat.
+- **🧠 Advanced Model Selection:** Switch between different Gemini models (Flash, Pro) on the fly via the built-in selector.
+- **📱 True Responsive Design:** Optimized for every screen size, from mobile devices to ultra-wide monitors.
+- **🔐 Secure Proxy Backend:** All API requests are proxied through a Node.js server, keeping your **Gemini API Key** safe and hidden from the client browser.
+- **📝 Markdown & Code Highlighting:** Rich text rendering with syntax highlighting for code blocks.
+- **⚡ Real-time Feedback:** Interactive suggested prompts and loading states to keep the experience engaging.
 
 ---
 
 ## 🛠️ Tech Stack
 
-**Frontend:**
-* React (Vite)
-* Context API
-* CSS3 (Modules & Animations)
-* Web Speech API (Voice Input/TTS)
+### Frontend
+- **React (Vite)** — Core framework for speed and modularity.
+- **Framer Motion** — Advanced animations and UI transitions.
+- **React Markdown** — High-fidelity response rendering.
+- **Web Speech API** — Native browser support for voice interactions.
 
-**Backend:**
-* Node.js & Express
-* Google Generative AI SDK
-* Dotenv (Environment Management)
-* CORS (Cross-Origin Resource Sharing)
+### Backend
+- **Node.js & Express** — High-performance secure proxy layer.
+- **Google Generative AI SDK** — Deep integration with Gemini for cutting-edge LLM capabilities.
+- **Dotenv** — Secure environment variable management.
 
 ---
 
@@ -47,111 +46,95 @@ Built with ❤️ by **Sarvadnya**.
 
 ```text
 gemini-clone/
-├── backend/                # Express Server
-│   ├── server.js           # Entry point & API routes
-│   ├── gemini.js           # Gemini SDK Configuration
-│   └── .env                # Backend secrets (API Key)
 ├── src/                    # React Frontend
-│   ├── components/         # UI Components (Main, Sidebar, etc.)
-│   ├── context/            # Context API logic
-│   ├── assets/             # Images and Icons
-│   ├── config/             # Frontend config
-│   └── App.jsx             # Main App entry
-├── .env                    # Frontend environment variables
-└── package.json            # Scripts and dependencies
+│   ├── components/         # Modular UI components (Sidebar, Main, Composer, etc.)
+│   ├── context/            # Global state management using Context API
+│   ├── assets/             # Brand identity and visual assets
+│   ├── api/                # Client-side API abstraction
+│   └── App.jsx             # Root application orchestrator
+├── server.js               # Node.js Express server (Proxy)
+├── gemini.js               # Gemini SDK configuration & logic
+├── .env                    # Environment secrets
+├── vite.config.js          # Build & Dev configuration
+└── package.json            # Dependency manifest
+```
 
-⚙️ Installation & Setup
-1. Clone the Repository
-Bash
-git clone [https://github.com/your-username/gemini-clone.git](https://github.com/your-username/gemini-clone.git)
+---
+
+## ⚙️ Installation & Setup
+
+### 1. Clone & Install
+```bash
+git clone https://github.com/your-username/gemini-clone.git
 cd gemini-clone
-2. Backend Configuration
-Navigate to the backend folder and install dependencies:
-
-Bash
-cd backend
 npm install
-Create a .env file in the backend/ directory:
+```
 
-Ini, TOML
+### 2. Configuration (`.env`)
+Create a `.env` file in the root directory and add your credentials:
+
+```ini
+# Gemini API Key from Google AI Studio
 GEMINI_API_KEY=your_google_api_key_here
+
+# Backend configuration
 PORT=5000
-Start the backend:
 
-Bash
-npm start
-3. Frontend Configuration
-Navigate back to the root directory and install dependencies:
-
-Bash
-cd ..
-npm install
-Create a .env file in the root directory:
-
-Ini, TOML
+# Frontend configuration
 VITE_API_BASE_URL=http://localhost:5000
-Start the frontend:
+```
 
-Bash
+### 3. Run the Development Environment
+You'll need to run both the backend server and the frontend development server.
+
+**Terminal 1 (Backend):**
+```bash
+npm run server
+```
+
+**Terminal 2 (Frontend):**
+```bash
 npm run dev
-🔌 API Documentation
-POST /api/chat
-Proxies the user prompt to the Google Gemini API.
+```
 
-Request Body:
+---
 
-JSON
+## 🔌 API Documentation
+
+### `POST /api/chat`
+Proxies user prompts and attachments to the Google Gemini API.
+
+**Request Body:**
+```json
 {
-  "prompt": "Explain how quantum computing works."
+  "prompt": "Explain the concept of quantum entanglement.",
+  "attachments": [
+    { "data": "data:image/png;base64,...", "name": "image.png" }
+  ]
 }
-Successful Response:
+```
 
-JSON
-{
-  "response": "Quantum computing uses qubits to..."
-}
-Note: We use a backend proxy to prevent CORS issues and to ensure the API Key is never exposed in the browser's "Network" tab.
+---
 
-🚀 Deployment Guide
-Frontend (Vercel/Netlify)
-Push your code to GitHub.
+## 🛡️ Security & Best Practices
 
-Connect your repo to Vercel.
+- **API Protection:** The server-side proxy prevents your Gemini API key from being exposed in public client-side network logs.
+- **Error Handling:** Implemented global catch-alls for network timeouts and API limit exhausts.
+- **Validation:** Sanity checks on file sizes (5MB limit) and prompt lengths to ensure stability.
 
-Set the Environment Variable: VITE_API_BASE_URL to your deployed backend URL.
+---
 
-Build command: npm run build, Output directory: dist.
+## 🎯 Future Roadmap
 
-Backend (Render/Railway)
-Create a new Web Service.
+- [ ] **Streaming Responses:** Real-time character-by-character typing effects.
+- [ ] **User Authentication:** Save and sync chat history across multiple devices.
+- [ ] **Custom Themes:** User-selectable color palettes (Light, OLED Dark, Modern Blue).
+- [ ] **Plug-in System:** Extend capabilities with external tools like Search or Code Interpreter.
 
-Set the Build Command: npm install.
+---
 
-Set the Start Command: node server.js.
+## 📜 License
 
-Add your GEMINI_API_KEY and PORT in the service's Environment Variables.
+Distributed under the MIT License. See `LICENSE` for more information.
 
-🛡️ Security Best Practices
-Never commit your .env files to GitHub (added to .gitignore).
-
-Use Rate Limiting on the backend to prevent API abuse.
-
-Always validate the prompt length and content on the server side.
-
-Use the MOCK_STREAM=true environment variable during UI testing to save on API quota.
-
-🎯 Future Roadmap
-[ ] Streaming Responses: Implement chunked data transfer for real-time typing effects.
-
-[ ] Markdown Support: Better rendering for code blocks and formatting.
-
-[ ] Dark Mode: Add a theme toggle for low-light environments.
-
-[ ] Image Analysis: Integrate Gemini-Pro-Vision for image-to-text capabilities.
-
-[ ] Auth: User login to sync chat history across devices.
-
-📜 License
-Distributed under the MIT License. See LICENSE for more information.
-
-Author: Sarvadnya
+**Author:** [Sarvadnya](https://github.com/Sarvadnya07)
