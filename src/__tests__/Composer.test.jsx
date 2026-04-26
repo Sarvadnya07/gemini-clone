@@ -9,6 +9,6 @@ describe('Composer component', () => {
         <Composer />
       </ContextProvider>
     );
-    expect(screen.getByPlaceholderText('Enter a prompt here')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Ask Gemini...')).toBeInTheDocument();
   });
 });

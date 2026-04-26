@@ -2,6 +2,7 @@ import { useContext } from 'react';
 import { motion } from 'framer-motion';
 import './Settings.css';
 import { Context } from '../../context/context';
+import { PERSONAS } from '../../utils/personas';
 
 const Settings = () => {
   const { config, updateConfig, setShowSettings, templates, addTemplate, deleteTemplate, setInput } =
@@ -49,6 +50,42 @@ const Settings = () => {
               <option value="gemini-2.5-flash">Gemini 2.5 Flash (Fastest)</option>
               <option value="gemini-2.5-pro">Gemini 2.5 Pro (Best Quality)</option>
               <option value="gemini-2.0-flash">Gemini 2.0 Flash (Balanced)</option>
+            </select>
+          </div>
+
+          <div className="settings-group">
+            <label>Persona</label>
+            <select value={config.persona} onChange={(e) => updateConfig({ persona: e.target.value })}>
+              {Object.entries(PERSONAS).map(([id, p]) => (
+                <option key={id} value={id}>{p.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="settings-group">
+            <label>Plugins & Grounding</label>
+            <div className="plugin-item">
+              <div className="plugin-info">
+                <span className="plugin-name">Google Search</span>
+                <span className="plugin-desc">Access real-time information from the web.</span>
+              </div>
+              <input 
+                type="checkbox" 
+                checked={config.plugins?.googleSearch} 
+                onChange={(e) => updateConfig({ 
+                  plugins: { ...config.plugins, googleSearch: e.target.checked } 
+                })} 
+              />
+            </div>
+          </div>
+
+          <div className="settings-group">
+            <label>Theme</label>
+            <select value={config.theme || 'dark'} onChange={(e) => updateConfig({ theme: e.target.value })}>
+              <option value="dark">Default Dark</option>
+              <option value="oled">OLED Black</option>
+              <option value="purple">Deep Purple</option>
+              <option value="high-contrast">High Contrast</option>
             </select>
           </div>
 

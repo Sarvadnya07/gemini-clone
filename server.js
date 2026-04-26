@@ -1,6 +1,7 @@
 // server.js (ROOT, CommonJS) — Production-hardened
 require("dotenv").config();
 const express = require("express");
+const path = require("path");
 const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
@@ -10,7 +11,20 @@ const authMiddleware = require("./middleware/auth");
 const { generalLimiter, chatLimiter } = require("./middleware/rateLimiter");
 const { validateChatInput } = require("./middleware/validate");
 const Chat = require("./models/Chat");
+const User = require("./models/User");
+const Document = require("./models/Document");
 const logger = require("./utils/logger");
+const cache = require("./utils/cache");
+const validateEnv = require("./utils/envValidator");
+const multer = require("multer");
+const pdf = require("pdf-parse");
+const mammoth = require("mammoth");
+const { chunkText, getEmbeddings, performRAG } = require("./utils/rag");
+
+const upload = multer({ storage: multer.memoryStorage() });
+
+// Validate environment variables before doing anything else
+validateEnv();
 
 const app = express();
 
@@ -43,10 +57,11 @@ app.use(
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'"],
-        imgSrc: ["'self'", "data:", "https:"],
-        connectSrc: ["'self'", "https://generativelanguage.googleapis.com"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "https://www.googletagmanager.com", "https://www.gstatic.com"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        imgSrc: ["'self'", "data:", "https:", "https://www.gstatic.com"],
+        connectSrc: ["'self'", "https://generativelanguage.googleapis.com", "https://*.firebaseio.com", "https://*.googleapis.com", "https://www.google-analytics.com"],
       },
     },
     crossOriginEmbedderPolicy: false,
@@ -107,6 +122,59 @@ app.get("/health", (req, res) => {
 });
 
 // ---------------------------------------
+// AUTO-TITLING ROUTE
+// ---------------------------------------
+app.post("/api/generate-title", chatLimiter, async (req, res) => {
+  try {
+    const { prompt } = req.body;
+    if (!prompt) return res.status(400).json({ error: "Prompt is required" });
+
+    const titlePrompt = `Generate a very short, concise title (max 5 words) for a chat that starts with this prompt: "${prompt}". Return ONLY the title text, no quotes or period.`;
+    
+    if (process.env.MOCK_STREAM === "true") {
+      return res.json({ title: prompt.slice(0, 30) + (prompt.length > 30 ? "..." : "") });
+    }
+
+    const title = await run(titlePrompt);
+    res.json({ title: title.trim() });
+  } catch (error) {
+    logger.error("Title generation error", { message: error.message });
+    res.status(500).json({ error: "Failed to generate title" });
+  }
+});
+
+// ---------------------------------------
+// SMART SUGGESTIONS ROUTE
+// ---------------------------------------
+app.post("/api/generate-suggestions", chatLimiter, async (req, res) => {
+  try {
+    const { messages } = req.body;
+    if (!messages || !Array.isArray(messages)) return res.status(400).json({ error: "Messages array is required" });
+
+    const context = messages.slice(-3).map(m => `${m.role}: ${m.content}`).join("\n");
+    const suggestionPrompt = `Based on the following conversation history, suggest 3 short, helpful follow-up questions or prompts the user might want to ask next. Return ONLY a JSON array of strings.
+    
+    HISTORY:
+    ${context}
+    
+    JSON format: ["Suggestion 1", "Suggestion 2", "Suggestion 3"]`;
+
+    if (process.env.MOCK_STREAM === "true") {
+      return res.json(["Tell me more", "Explain the details", "What are the next steps?"]);
+    }
+
+    const response = await run(suggestionPrompt);
+    // Cleanup potential markdown formatting
+    const jsonStr = response.replace(/```json|```/g, "").trim();
+    const suggestions = JSON.parse(jsonStr);
+    res.json(suggestions);
+  } catch (error) {
+    logger.error("Suggestion generation error", { message: error.message });
+    res.json(["Tell me more", "Can you explain that further?", "Give me an example"]);
+  }
+});
+
+// ---------------------------------------
 // MAIN CHAT ROUTE
 // ---------------------------------------
 app.post("/api/chat", chatLimiter, validateChatInput, async (req, res) => {
@@ -119,16 +187,82 @@ app.post("/api/chat", chatLimiter, validateChatInput, async (req, res) => {
 
     logger.info(`Chat request`, { promptLength: prompt.length, ip: req.ip });
 
+    const cacheKey = `chat:${prompt}`;
+    const cachedResponse = await cache.get(cacheKey);
+    if (cachedResponse) {
+      logger.info(`Cache hit for prompt`, { promptLength: prompt.length });
+      return res.json({ success: true, response: cachedResponse, cached: true });
+    }
+
     if (process.env.MOCK_STREAM === "true") {
       const simulatedReply = `Simulated reply for: ${String(prompt).slice(0, 120)}\n\nThis is a mock response used for local testing.`;
+      await cache.set(cacheKey, simulatedReply);
       return res.json({ success: true, response: simulatedReply });
     }
 
     const reply = await run(prompt);
+    await cache.set(cacheKey, reply);
     res.json({ success: true, response: reply });
   } catch (error) {
     logger.error("Gemini /api/chat error", { message: error?.message });
     res.status(500).json({ success: false, error: "Gemini API error", details: error?.message || "Unknown error" });
+  }
+});
+
+// ---------------------------------------
+// DOCUMENT RAG ROUTES (Auth-protected)
+// ---------------------------------------
+app.post("/api/documents/upload", authMiddleware, upload.single("file"), async (req, res) => {
+  if (!req.user) return res.status(401).json({ error: "Unauthorized" });
+  if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+
+  try {
+    let text = "";
+    const mimetype = req.file.mimetype;
+
+    if (mimetype === "application/pdf") {
+      const data = await pdf(req.file.buffer);
+      text = data.text;
+    } else if (mimetype === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+      const data = await mammoth.extractRawText({ buffer: req.file.buffer });
+      text = data.value;
+    } else {
+      text = req.file.buffer.toString("utf-8");
+    }
+
+    if (!text || text.trim().length === 0) {
+      return res.status(400).json({ error: "Could not extract text from file" });
+    }
+
+    const chunks = chunkText(text);
+    const embeddings = await getEmbeddings(chunks);
+    
+    const docChunks = chunks.map((t, i) => ({
+      text: t,
+      embedding: embeddings[i]
+    }));
+
+    const doc = await Document.create({
+      userId: req.user.uid,
+      filename: req.file.originalname,
+      text: text,
+      chunks: docChunks
+    });
+
+    res.json({ id: doc._id, filename: doc.filename });
+  } catch (error) {
+    logger.error("Document upload error", { message: error.message });
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get("/api/documents", authMiddleware, async (req, res) => {
+  if (!req.user) return res.status(401).json({ error: "Unauthorized" });
+  try {
+    const docs = await Document.find({ userId: req.user.uid }).select("filename createdAt");
+    res.json(docs);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -140,9 +274,27 @@ app.post("/api/chat/stream", chatLimiter, validateChatInput, async (req, res) =>
   res.setHeader("Transfer-Encoding", "chunked");
   res.setHeader("X-Content-Type-Options", "nosniff");
 
-  const { prompt, image, config } = req.body;
+  const { prompt, image, config, docId } = req.body;
 
   try {
+    let augmentedPrompt = prompt;
+
+    // RAG Implementation
+    if (docId && req.user) {
+      try {
+        const doc = await Document.findOne({ _id: docId, userId: req.user.uid });
+        if (doc) {
+          const context = await performRAG(prompt, doc.chunks);
+          if (context) {
+            augmentedPrompt = `You are an assistant answering questions based on the provided document context.\n\nDOCUMENT CONTEXT:\n${context}\n\nUSER QUESTION: ${prompt}\n\nPlease answer based ONLY on the context provided if possible. If the answer is not in the context, say so.`;
+            logger.info("RAG context injected", { docId, filename: doc.filename });
+          }
+        }
+      } catch (ragErr) {
+        logger.warn("RAG retrieval failed", { message: ragErr.message });
+      }
+    }
+
     if (process.env.MOCK_STREAM === "true") {
       const simulated = [
         `Thinking about: ${String(prompt).slice(0, 120)}\n`,
@@ -160,8 +312,8 @@ app.post("/api/chat/stream", chatLimiter, validateChatInput, async (req, res) =>
       return;
     }
 
-    logger.info("Stream request", { promptLength: prompt?.length, ip: req.ip });
-    const stream = runStream(prompt, image, config);
+    logger.info("Stream request", { promptLength: augmentedPrompt?.length, ip: req.ip });
+    const stream = runStream(augmentedPrompt, image, config);
     for await (const chunk of stream) {
       res.write(chunk);
     }
@@ -170,6 +322,73 @@ app.post("/api/chat/stream", chatLimiter, validateChatInput, async (req, res) =>
     logger.error("Stream error", { message: error?.message });
     res.write("\n\n⚠️ Error: Failed to generate response.");
     res.end();
+  }
+});
+
+// ---------------------------------------
+// ANALYTICS ROUTES (Auth-protected)
+// ---------------------------------------
+app.get("/api/admin/stats", authMiddleware, async (req, res) => {
+  if (!req.user) return res.status(401).json({ error: "Unauthorized" });
+  try {
+    const totalChats = await Chat.countDocuments({ userId: req.user.uid });
+    const chats = await Chat.find({ userId: req.user.uid });
+    
+    let totalMessages = 0;
+    const modelUsage = {};
+    
+    chats.forEach(chat => {
+      totalMessages += chat.messages.length;
+      chat.messages.forEach(msg => {
+        if (msg.role === 'assistant') {
+          const model = msg.modelA || 'unknown';
+          modelUsage[model] = (modelUsage[model] || 0) + 1;
+        }
+      });
+    });
+
+    res.json({
+      totalChats,
+      totalMessages,
+      modelUsage,
+      activeSince: chats.length > 0 ? chats[chats.length - 1].createdAt : new Date()
+    });
+  } catch (error) {
+    logger.error("GET /api/admin/stats error", { message: error.message });
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ---------------------------------------
+// USER SETTINGS ROUTES (Auth-protected)
+// ---------------------------------------
+app.get("/api/user/settings", authMiddleware, async (req, res) => {
+  if (!req.user) return res.status(401).json({ error: "Unauthorized" });
+  try {
+    let user = await User.findOne({ userId: req.user.uid });
+    if (!user) {
+      user = await User.create({ userId: req.user.uid, email: req.user.email });
+    }
+    res.json(user.settings);
+  } catch (error) {
+    logger.error("GET /api/user/settings error", { message: error.message });
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post("/api/user/settings", authMiddleware, async (req, res) => {
+  if (!req.user) return res.status(401).json({ error: "Unauthorized" });
+  const { settings } = req.body;
+  try {
+    const user = await User.findOneAndUpdate(
+      { userId: req.user.uid },
+      { settings, updatedAt: new Date() },
+      { upsert: true, new: true }
+    );
+    res.json(user.settings);
+  } catch (error) {
+    logger.error("POST /api/user/settings error", { message: error.message });
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -228,6 +447,18 @@ app.delete("/api/chats/:id", authMiddleware, async (req, res) => {
 });
 
 // ---------------------------------------
+// SERVE STATIC ASSETS (Production)
+// ---------------------------------------
+if (NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "dist")));
+  // Handle SPA routing
+  app.get("*", (req, res, next) => {
+    if (req.path.startsWith("/api")) return next();
+    res.sendFile(path.join(__dirname, "dist", "index.html"));
+  });
+}
+
+// ---------------------------------------
 // GLOBAL ERROR HANDLER
 // ---------------------------------------
 // eslint-disable-next-line no-unused-vars
@@ -241,10 +472,14 @@ app.use((err, req, res, next) => {
 // ---------------------------------------
 // START SERVER
 // ---------------------------------------
-app.listen(PORT, () => {
-  logger.info(`🚀 Gemini backend running at: http://localhost:${PORT} [${NODE_ENV}]`);
-  logger.info(`📡 CORS allowed origins: ${ALLOWED_ORIGINS.join(", ")}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    logger.info(`🚀 Gemini backend running at: http://localhost:${PORT} [${NODE_ENV}]`);
+    logger.info(`📡 CORS allowed origins: ${ALLOWED_ORIGINS.join(", ")}`);
+  });
+}
+
+module.exports = app;
 
 // ---------------------------------------
 // PROCESS-LEVEL ERROR HANDLERS

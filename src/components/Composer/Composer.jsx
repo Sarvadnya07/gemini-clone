@@ -4,7 +4,11 @@ import Lightbox from '../Lightbox/Lightbox';
 import { Context } from '../../context/context';
 
 const Composer = () => {
-  const { input, setInput, onSent, loading, attachments, setAttachments } = useContext(Context);
+  const { 
+    input, setInput, onSent, loading, 
+    attachments, setAttachments,
+    setRagDocId, user 
+  } = useContext(Context);
 
   const textareaRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -79,30 +83,67 @@ const Composer = () => {
 
   const processFiles = useCallback(
     (files) => {
-      const MAX = 5 * 1024 * 1024;
       const readers = files.map(
         (file) =>
-          new Promise((resolve) => {
-            if (file.size > MAX) return resolve(null);
-            const reader = new FileReader();
-            reader.onloadend = () =>
-              resolve({
-                id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
-                data: reader.result,
-                name: file.name,
-              });
-            reader.onerror = () => resolve(null);
-            reader.readAsDataURL(file);
+          new Promise(async (resolve) => {
+            const isDoc = file.type === 'application/pdf' || 
+                        file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+                        (file.type === 'text/plain' && file.size > 1024 * 10);
+            
+            if (isDoc && user) {
+              try {
+                const formData = new FormData();
+                formData.append('file', file);
+                const apiBase = (import.meta.env.VITE_API_BASE_URL && import.meta.env.VITE_API_BASE_URL.replace(/\/+$/, '')) || 'http://localhost:5000';
+                const token = await user.getIdToken();
+                const res = await fetch(`${apiBase}/api/documents/upload`, {
+                  method: 'POST',
+                  headers: { 'Authorization': `Bearer ${token}` },
+                  body: formData
+                });
+                if (res.ok) {
+                  const data = await res.json();
+                  resolve({
+                    id: data.id,
+                    name: file.name,
+                    isRAG: true
+                  });
+                } else {
+                  resolve(null);
+                }
+              } catch (err) {
+                console.error('RAG upload failed', err);
+                resolve(null);
+              }
+            } else {
+              const MAX = 5 * 1024 * 1024;
+              if (file.size > MAX) return resolve(null);
+              const reader = new FileReader();
+              reader.onloadend = () =>
+                resolve({
+                  id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+                  data: reader.result,
+                  name: file.name,
+                });
+              reader.onerror = () => resolve(null);
+              reader.readAsDataURL(file);
+            }
           })
       );
       Promise.all(readers).then((results) => {
         const valid = results.filter(Boolean);
         if (valid.length !== results.length)
           alert('Some files were skipped (max 5MB each)');
+        
+        const ragDocs = valid.filter(v => v.isRAG);
+        if (ragDocs.length > 0) {
+          setRagDocId(ragDocs[ragDocs.length - 1].id);
+        }
+        
         if (valid.length) setAttachments((prev) => [...prev, ...valid]);
       });
     },
-    [setAttachments]
+    [setAttachments, setRagDocId, user]
   );
 
   const handleFileChange = useCallback(
@@ -170,7 +211,7 @@ const Composer = () => {
             const isImage =
               typeof att.data === 'string' && att.data.indexOf('data:image') === 0;
             return (
-              <div key={att.id} className="composer-att-item">
+              <div key={att.id} className={`composer-att-item ${att.isRAG ? 'rag-doc' : ''}`}>
                 {isImage ? (
                   <img
                     src={att.data}
@@ -185,9 +226,10 @@ const Composer = () => {
                 )}
                 <button
                   className="composer-att-remove"
-                  onClick={() =>
-                    setAttachments((prev) => prev.filter((p) => p.id !== att.id))
-                  }
+                  onClick={() => {
+                    setAttachments((prev) => prev.filter((p) => p.id !== att.id));
+                    if (att.isRAG) setRagDocId(null);
+                  }}
                   aria-label="Remove attachment"
                 >
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>

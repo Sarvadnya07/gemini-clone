@@ -8,17 +8,17 @@ export default [
   { ignores: ['dist'] },
   // Node-specific files (server scripts) — treat as node environment
   {
-    files: ['server.js', 'gemini.js', 'debug_gemini.js', 'dotenv.js', 'test_models.js', 'middleware/**', 'models/**', 'utils/**'],
+    files: ['server.js', 'gemini.js', 'debug_gemini.js', 'dotenv.js', 'test_models.js', 'middleware/**', 'models/**', 'utils/**', 'tests/**'],
     languageOptions: {
-      globals: globals.node,
+      globals: { ...globals.node },
       parserOptions: { ecmaVersion: 'latest' },
     },
   },
   // Test files — enable jest/mocha globals for vitest compatibility
   {
-    files: ['src/__tests__/**', '**/*.test.{js,jsx}'],
+    files: ['src/__tests__/**', '**/*.test.{js,jsx}', 'tests/**'],
     languageOptions: {
-      globals: { ...globals.jest, ...globals.mocha },
+      globals: { ...globals.jest, ...globals.mocha, ...globals.node },
       parserOptions: { ecmaVersion: 'latest', ecmaFeatures: { jsx: true } },
     },
   },

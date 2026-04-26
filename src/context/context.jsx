@@ -2,6 +2,7 @@
 import { createContext, useCallback, useState, useEffect } from 'react';
 import { streamChat } from '../api/client';
 import { checkContent } from '../utils/moderation';
+import { PERSONAS } from '../utils/personas';
 import { logEvent } from '../utils/analytics';
 import { onAuthChange, loginWithGoogle, logout } from '../config/firebase';
 
@@ -14,24 +15,32 @@ const ContextProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null); // optional error message
 
-  const [prevPrompts, setPrevPrompts] = useState([]); // List of { id, title }
-  const [templates, setTemplates] = useState([]); // Saved prompt templates
+  const [prevPrompts, setPrevPrompts] = useState([]);
   const [currentChatId, setCurrentChatId] = useState(null);
-  const [attachments, setAttachments] = useState([]); // [{ id, data }]
-  
-  // Modals & Navigation
-  const [showSettings, setShowSettings] = useState(false);
+
   const [showHelp, setShowHelp] = useState(false);
   const [showActivity, setShowActivity] = useState(false);
   const [showAccount, setShowAccount] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showDashboard, setShowDashboard] = useState(false);
+  const [ragDocId, setRagDocId] = useState(null);
+  const [smartSuggestions, setSmartSuggestions] = useState([]);
 
-  // User & Sync
+  const [templates, setTemplates] = useState([]);
+  const [attachments, setAttachments] = useState([]); // [{ id, data, name }]
+
   const [user, setUser] = useState(null);
   const [isSyncing, setIsSyncing] = useState(false);
 
   const [config, setConfig] = useState({
     model: "gemini-2.5-flash",
-    temperature: 1.0
+    temperature: 1.0,
+    persona: "helpful_assistant",
+    comparisonMode: false,
+    comparisonModel: "gemini-2.5-pro",
+    plugins: {
+      googleSearch: false
+    }
   });
 
 
@@ -42,208 +51,137 @@ const ContextProvider = ({ children }) => {
       if (savedConfig) {
         setConfig(JSON.parse(savedConfig));
       }
-    } catch (e) {
-      console.error("Failed to load config", e);
-    }
+    } catch { /* ignore */ }
   }, []);
 
-  // Save config to localStorage
-  const updateConfig = useCallback((newConfig) => {
+  const updateConfig = useCallback(async (newConfig) => {
+    let updated;
     setConfig((prev) => {
-      const updated = { ...prev, ...newConfig };
+      updated = { ...prev, ...newConfig };
       localStorage.setItem('gemini_config', JSON.stringify(updated));
       return updated;
     });
-  }, []);
 
-  // Auth Listener
+    // If logged in, sync to server in background
+    if (user && updated) {
+      try {
+        const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+        const token = await user.getIdToken();
+        fetch(`${apiBase}/api/user/settings`, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ settings: updated })
+        });
+      } catch (err) {
+        console.warn('Sync settings failed', err);
+      }
+    }
+  }, [user]);
+
+  // Sync auth state and load settings
   useEffect(() => {
-    const unsubscribe = onAuthChange((currentUser) => {
-      setUser(currentUser);
-      if (currentUser) {
-        logEvent('login', { method: 'firebase' });
-        fetchServerHistory(currentUser);
-      } else {
-        // Fallback to local storage if user logs out
-        loadLocalHistory();
+    const unsubscribe = onAuthChange(async (u) => {
+      setUser(u);
+      if (u) {
+        try {
+          const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+          const token = await u.getIdToken();
+          const res = await fetch(`${apiBase}/api/user/settings`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (res.ok) {
+            const remoteSettings = await res.json();
+            setConfig((prev) => ({ ...prev, ...remoteSettings }));
+          }
+        } catch (err) {
+          console.warn('Load settings failed', err);
+        }
       }
     });
     return () => unsubscribe();
   }, []);
 
-  const fetchServerHistory = async (currentUser) => {
-    setIsSyncing(true);
-    try {
-      const token = await currentUser.getIdToken();
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/chats`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setPrevPrompts(data);
-      }
-    } catch (e) {
-      console.error('Server sync failed', e);
-    } finally {
-      setIsSyncing(false);
-    }
-  };
-
-  const loadLocalHistory = () => {
-    try {
-      const savedPrompts = localStorage.getItem('gemini_prevPrompts');
-      if (savedPrompts) setPrevPrompts(JSON.parse(savedPrompts));
-    } catch {
-      console.error('Local history failed');
-    }
-  };
-
-  // Save to persistence (Local OR Server)
-  const persistChat = useCallback(async (chatId, title, messages, pinned = false) => {
-    if (user) {
-      try {
-        const token = await user.getIdToken();
-        await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/chats`, {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify({ id: chatId, title, messages, pinned })
-        });
-      } catch (err) {
-        console.warn('Background sync failed', err);
-      }
-    } else {
-      localStorage.setItem(`gemini_chat_${chatId}`, JSON.stringify(messages));
-    }
-  }, [user]);
-
-  // Load from LocalStorage on mount (Initial)
-  useEffect(() => {
-    loadLocalHistory();
-    try {
-      const savedTemplates = localStorage.getItem('gemini_templates');
-      if (savedTemplates) setTemplates(JSON.parse(savedTemplates));
-    } catch { /* ignore */ }
+  const saveHistory = useCallback((history) => {
+    localStorage.setItem('gemini_history', JSON.stringify(history));
   }, []);
 
-
-  // Save to localStorage whenever prevPrompts changes
-  const saveHistory = useCallback((prompts) => {
-    localStorage.setItem('gemini_prevPrompts', JSON.stringify(prompts));
-  }, []);
-
-  const saveTemplates = useCallback((t) => {
-    localStorage.setItem('gemini_templates', JSON.stringify(t));
-  }, []);
-
-  const addTemplate = useCallback((title, prompt) => {
-    setTemplates((prev) => {
-      const entry = { id: Date.now().toString(), title, prompt };
-      const updated = [entry, ...prev];
-      try { saveTemplates(updated); } catch (e) { console.error('save template failed', e); }
-      return updated;
-    });
-  }, [saveTemplates]);
-
-  const deleteTemplate = useCallback((id) => {
-    setTemplates((prev) => {
-      const updated = prev.filter((t) => t.id !== id);
-      try { saveTemplates(updated); } catch (e) { console.error('delete template failed', e); }
-      return updated;
-    });
-  }, [saveTemplates]);
-
-
-  // Rename a conversation in the history
-  const renameConversation = useCallback((chatId, newTitle) => {
-    setPrevPrompts((prev) => {
-      const updated = prev.map((p) => (p.id === chatId ? { ...p, title: newTitle } : p));
-      try {
-        saveHistory(updated);
-      } catch (e) {
-        console.error('Failed to save renamed conversation', e);
-      }
-      return updated;
-    });
-  }, [saveHistory]);
-
-  // Delete a conversation and its persisted messages
-  const deleteConversation = useCallback((chatId) => {
-    setPrevPrompts((prev) => {
-      const updated = prev.filter((p) => p.id !== chatId);
-      try {
-        saveHistory(updated);
-        localStorage.removeItem(`gemini_chat_${chatId}`);
-      } catch (e) {
-        console.error('Failed to delete conversation', e);
-      }
-      return updated;
-    });
-    // If the deleted chat is currently open, clear it
-    setMessages((msgs) => (msgs && msgs.length ? msgs : []));
-    setCurrentChatId((id) => (id === chatId ? null : id));
-  }, [saveHistory]);
-
-  // Pin or unpin a conversation (bring to front when pinned)
-  const pinConversation = useCallback((chatId) => {
-    setPrevPrompts((prev) => {
-      const idx = prev.findIndex((p) => p.id === chatId);
-      if (idx === -1) return prev;
-      const item = prev[idx];
-      const without = prev.slice(0, idx).concat(prev.slice(idx + 1));
-      const updated = [{ ...item, pinned: !item.pinned }, ...without];
-      try {
-        saveHistory(updated);
-      } catch (e) {
-        console.error('Failed to pin conversation', e);
-      }
-      return updated;
-    });
-  }, [saveHistory]);
-
-  // (appendMessage helper removed — unused)
-
-  const newChat = useCallback(() => {
-    setLoading(false);
-    setError(null);
-    setMessages([]);
-    setCurrentChatId(null);
-    setAttachments([]);
+  const persistChat = useCallback((chatId, title, msgs) => {
+    localStorage.setItem(`gemini_chat_${chatId}`, JSON.stringify(msgs));
   }, []);
 
   const loadChat = useCallback((chatId) => {
     try {
-      const savedChat = localStorage.getItem(`gemini_chat_${chatId}`);
-      if (savedChat) {
-        setMessages(JSON.parse(savedChat));
+      const data = localStorage.getItem(`gemini_chat_${chatId}`);
+      if (data) {
+        setMessages(JSON.parse(data));
         setCurrentChatId(chatId);
       }
-    } catch (e) {
-      console.error('Failed to load chat', e);
-    }
+    } catch { /* ignore */ }
   }, []);
 
-  // Main send function
+  const newChat = useCallback(() => {
+    setMessages([]);
+    setCurrentChatId(null);
+    setInput('');
+    setAttachments([]);
+  }, []);
+
+  const renameConversation = useCallback((chatId, newTitle) => {
+    setPrevPrompts((prev) => {
+      const updated = prev.map((p) => (p.id === chatId ? { ...p, title: newTitle } : p));
+      saveHistory(updated);
+      return updated;
+    });
+  }, [saveHistory]);
+
+  const deleteConversation = useCallback((chatId) => {
+    setPrevPrompts((prev) => {
+      const updated = prev.filter((p) => p.id !== chatId);
+      saveHistory(updated);
+      return updated;
+    });
+    localStorage.removeItem(`gemini_chat_${chatId}`);
+    if (currentChatId === chatId) newChat();
+  }, [currentChatId, newChat, saveHistory]);
+
+  const pinConversation = useCallback((chatId) => {
+    setPrevPrompts((prev) => {
+      const updated = prev.map((p) => (p.id === chatId ? { ...p, pinned: !p.pinned } : p));
+      saveHistory(updated);
+      return updated;
+    });
+  }, [saveHistory]);
+
+  const addTemplate = (title, prompt) => {
+    const newT = { id: Date.now().toString(), title, prompt };
+    setTemplates((prev) => {
+      const updated = [...prev, newT];
+      localStorage.setItem('gemini_templates', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const deleteTemplate = (id) => {
+    setTemplates((prev) => {
+      const updated = prev.filter((t) => t.id !== id);
+      localStorage.setItem('gemini_templates', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
   const onSent = useCallback(
     async (customPrompt) => {
-      const finalPrompt = (customPrompt ?? input).trim();
-      // Prevent sending while offline
-      if (typeof navigator !== 'undefined' && !navigator.onLine) {
-        setError('You are offline. Please check your network and try again.');
-        return;
-      }
+      const finalPrompt = customPrompt || input;
+      if (!finalPrompt.trim() && attachments.length === 0) return;
 
-      if ((!finalPrompt && (!attachments || attachments.length === 0)) || loading) return;
-
-      // Client-side moderation preflight
+      // 1. Content Moderation (Client-side)
       try {
         const mod = checkContent(finalPrompt);
         if (mod.flagged) {
-          setError(mod.reason || 'Content blocked by moderation');
-          // Log moderation event
-          logEvent('moderation_block', { prompt: finalPrompt.slice(0, 120), reason: mod.reason });
+          setError(`Flagged: ${mod.categories.join(', ')}`);
           return;
         }
       } catch (e) {
@@ -252,16 +190,35 @@ const ContextProvider = ({ children }) => {
 
       // Determine Chat ID
       let chatId = currentChatId;
+      let isNewChat = false;
       if (!chatId) {
         chatId = Date.now().toString();
         setCurrentChatId(chatId);
+        isNewChat = true;
 
         // Add to history list if it's a new chat
         setPrevPrompts((prev) => {
-          const updated = [{ id: chatId, title: finalPrompt || 'Image Prompt' }, ...prev];
+          const updated = [{ id: chatId, title: finalPrompt.slice(0, 40) || 'New Chat' }, ...prev];
           saveHistory(updated);
           return updated;
         });
+      }
+
+      // If it's a new chat, generate a better title in the background
+      if (isNewChat && finalPrompt) {
+        const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+        fetch(`${apiBase}/api/generate-title`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt: finalPrompt })
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.title) {
+              renameConversation(chatId, data.title);
+            }
+          })
+          .catch((err) => console.warn('Auto-titling failed', err));
       }
 
       // Add user message instantly
@@ -270,7 +227,7 @@ const ContextProvider = ({ children }) => {
         id: userMsgId,
         role: 'user',
         content: finalPrompt,
-        attachments: attachments,
+        attachments: [...attachments],
         createdAt: new Date().toISOString(),
       };
 
@@ -291,71 +248,112 @@ const ContextProvider = ({ children }) => {
       const assistantMsg = {
         id: assistantMsgId,
         role: 'assistant',
-        content: '', // Start empty
+        content: '',
+        contentB: config.comparisonMode ? '' : null,
+        modelA: config.model,
+        modelB: config.comparisonMode ? config.comparisonModel : null,
         createdAt: new Date().toISOString(),
       };
 
-      setMessages((prev) => {
-        const updated = [...prev, assistantMsg];
-        return updated;
-      });
+      setMessages((prev) => [...prev, assistantMsg]);
 
-      try {
-        // Analytics: log send attempt
-        logEvent('send_attempt', { length: finalPrompt.length, model: config?.model });
-        // Use the streaming endpoint via centralized client
-  const response = await streamChat({ prompt: finalPrompt, image: userMsg.attachments, config });
+      const runSingleStream = async (targetField, targetModel) => {
+        try {
+          const streamConfig = {
+            ...config,
+            model: targetModel,
+            systemInstruction: PERSONAS[config.persona]?.instruction || null
+          };
+          
+          const response = await streamChat({ 
+            prompt: finalPrompt, 
+            image: userMsg.attachments, 
+            config: streamConfig,
+            docId: ragDocId
+          });
 
-        if (!response.ok) {
-          throw new Error(`Server error: ${response.status}`);
-        }
+          if (!response.ok) throw new Error(`Server error: ${response.status}`);
+          if (!response.body) throw new Error('ReadableStream not supported.');
 
-        if (!response.body) {
-          throw new Error('ReadableStream not supported in this browser.');
-        }
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder();
+          let accumulatedText = '';
+          let done = false;
 
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let done = false;
-        let accumulatedText = '';
-
-        while (!done) {
-          const { value, done: doneReading } = await reader.read();
-          done = doneReading;
-          const chunkValue = decoder.decode(value, { stream: true });
-          accumulatedText += chunkValue;
-
-          // Update the assistant message content in real-time
+          while (!done) {
+            const { value, done: doneReading } = await reader.read();
+            done = doneReading;
+            if (value) {
+              accumulatedText += decoder.decode(value, { stream: true });
+              setMessages((prev) => {
+                const updated = [...prev];
+                const idx = updated.findIndex((m) => m.id === assistantMsgId);
+                if (idx !== -1) {
+                  updated[idx] = { ...updated[idx], [targetField]: accumulatedText };
+                }
+                return updated;
+              });
+            }
+          }
+        } catch (err) {
+          console.error(`Stream error for ${targetModel}:`, err);
           setMessages((prev) => {
-            const updated = prev.map((msg) =>
-              msg.id === assistantMsgId
-                ? { ...msg, content: accumulatedText }
-                : msg
-            );
-            // Save periodically or at least here
-            localStorage.setItem(`gemini_chat_${chatId}`, JSON.stringify(updated));
+            const updated = [...prev];
+            const idx = updated.findIndex((m) => m.id === assistantMsgId);
+            if (idx !== -1) {
+              updated[idx] = { 
+                ...updated[idx], 
+                [targetField]: (updated[idx][targetField] || '') + '\n\n⚠️ Error generating response.' 
+              };
+            }
             return updated;
           });
+        }
+      };
+
+      setSmartSuggestions([]); // Clear previous suggestions
+      try {
+        logEvent('send_attempt', { length: finalPrompt.length, model: config?.model });
+        
+        if (config.comparisonMode) {
+          await Promise.all([
+            runSingleStream('content', config.model),
+            runSingleStream('contentB', config.comparisonModel)
+          ]);
+        } else {
+          await runSingleStream('content', config.model);
+        }
+
+        // Final persistence
+        let finalMessages;
+        setMessages((prev) => {
+          finalMessages = prev;
+          persistChat(chatId, finalPrompt || 'New Chat', prev);
+          return prev;
+        });
+
+        // Generate context-aware follow-up suggestions
+        if (finalMessages && finalMessages.length > 0) {
+          const apiBase = (import.meta.env.VITE_API_BASE_URL && import.meta.env.VITE_API_BASE_URL.replace(/\/+$/, '')) || 'http://localhost:5000';
+          fetch(`${apiBase}/api/generate-suggestions`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ messages: finalMessages.slice(-5) })
+          }).then(res => res.json())
+            .then(data => setSmartSuggestions(data))
+            .catch(err => console.warn('Failed to fetch suggestions', err));
         }
 
       } catch (err) {
         console.error('Chat API error:', err);
-        setError('Something went wrong while contacting Gemini.');
-        logEvent('send_error', { message: err?.message });
-        setMessages((prev) => {
-          const updated = prev.map((msg) =>
-            msg.id === assistantMsgId
-              ? { ...msg, content: msg.content + '\n\n⚠️ Error: Failed to complete response.' }
-              : msg
-          );
-          localStorage.setItem(`gemini_chat_${chatId}`, JSON.stringify(updated));
-          return updated;
-        });
+        const errorMessage = err?.message || 'Something went wrong while contacting Gemini.';
+        setError(errorMessage);
+        logEvent('send_error', { message: errorMessage });
       } finally {
         setLoading(false);
       }
     },
-    [input, loading, currentChatId, saveHistory, attachments, config, persistChat]
+    [input, loading, currentChatId, saveHistory, attachments, config, persistChat, renameConversation]
   );
 
     // Retry helper: resend the last user prompt that preceded a given assistant message
@@ -408,18 +406,20 @@ const ContextProvider = ({ children }) => {
     setShowActivity,
     showAccount,
     setShowAccount,
+    showDashboard,
+    setShowDashboard,
+    ragDocId,
+    setRagDocId,
+    smartSuggestions,
+    setSmartSuggestions,
     user,
     loginWithGoogle,
     logout,
+    config,
     isSyncing
   };
 
-
-  return (
-    <Context.Provider value={contextValue}>
-      {children}
-    </Context.Provider>
-  );
+  return <Context.Provider value={contextValue}>{children}</Context.Provider>;
 };
 
 export default ContextProvider;

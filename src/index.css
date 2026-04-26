@@ -19,13 +19,46 @@ html {
   scroll-behavior: smooth;
 }
 
+:root {
+  --bg-color: #0e0e10;
+  --sidebar-bg: #1e1f20;
+  --text-color: #e3e3e8;
+  --accent-color: #8ab4f8;
+  --border-color: rgba(255, 255, 255, 0.08);
+  --input-bg: rgba(255, 255, 255, 0.05);
+  --msg-user-bg: rgba(255, 255, 255, 0.06);
+}
+
+body.theme-oled {
+  --bg-color: #000000;
+  --sidebar-bg: #000000;
+  --border-color: #222;
+}
+
+body.theme-purple {
+  --bg-color: #0d0a1a;
+  --sidebar-bg: #151125;
+  --accent-color: #d8b4fe;
+  --border-color: rgba(216, 180, 254, 0.1);
+  --msg-user-bg: rgba(216, 180, 254, 0.08);
+}
+
+body.theme-high-contrast {
+  --bg-color: #000;
+  --text-color: #fff;
+  --accent-color: #ffff00;
+  --border-color: #fff;
+  --input-bg: #000;
+}
+
 body {
   font-family: 'Google Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  background-color: #0e0e10;
-  color: #e3e3e8;
+  background-color: var(--bg-color);
+  color: var(--text-color);
   overflow-x: hidden;
   -webkit-tap-highlight-color: transparent;
   line-height: 1.6;
+  transition: background-color 0.3s, color 0.3s;
 }
 
 /* Remove ugly outlines but keep accessibility */

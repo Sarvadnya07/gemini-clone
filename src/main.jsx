@@ -4,9 +4,13 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import ContextProvider from "./context/context.jsx";
 import ErrorBoundary from "./components/ErrorBoundary/ErrorBoundary.jsx";
+import startHeartbeat from "./utils/heartbeat.js";
 
 // Lazy-load App for faster initial paint
 const App = lazy(() => import("./App.jsx"));
+
+// Start background heartbeat to prevent backend cold starts
+startHeartbeat();
 
 // Ensures root element exists — avoids silent crashes in production
 const rootElement = document.getElementById("root");

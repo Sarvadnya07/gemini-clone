@@ -91,34 +91,57 @@ async function* runStream(prompt, image, config = {}) {
     throw new Error("Prompt must be a non-empty string");
   }
 
-  const modelName = config.model || "gemini-2.5-flash";
-  const temperature = config.temperature !== undefined ? parseFloat(config.temperature) : 1.0;
+    const modelName = config.model || "gemini-2.5-flash";
+    const temperature = config.temperature !== undefined ? parseFloat(config.temperature) : 1.0;
+    const systemInstruction = config.systemInstruction || null;
 
-  try {
-    if (!genAI) {
-      throw new Error('Gemini API key not configured. Set GEMINI_API_KEY in your environment or use MOCK_STREAM for local testing.');
-    }
+    try {
+      if (!genAI) {
+        throw new Error('Gemini API key not configured. Set GEMINI_API_KEY in your environment or use MOCK_STREAM for local testing.');
+      }
 
-    // Dynamic model instantiation
-    const dynamicModel = genAI.getGenerativeModel({ model: modelName });
+      // Support for Plugins / Tools
+      const tools = [];
+      if (config.plugins?.googleSearch) {
+        tools.push({ googleSearchRetrieval: {} });
+      }
+
+      // Dynamic model instantiation
+      const dynamicModel = genAI.getGenerativeModel({ 
+        model: modelName,
+        systemInstruction: systemInstruction,
+        tools: tools.length > 0 ? tools : undefined
+      });
 
     const dynamicConfig = { ...generationConfig, temperature };
 
     const chatSession = dynamicModel.startChat({ generationConfig: dynamicConfig, safetySettings, history: [] });
 
     let result;
+    const parts = [prompt];
+
     if (image) {
-      const base64Data = image.replace(/^data:image\/\w+;base64,/, "");
-      const imagePart = {
-        inlineData: {
-          data: base64Data,
-          mimeType: "image/jpeg",
-        },
-      };
-      result = await chatSession.sendMessageStream([prompt, imagePart]);
-    } else {
-      result = await chatSession.sendMessageStream(prompt);
+      const attachments = Array.isArray(image) ? image : [image];
+      
+      for (const att of attachments) {
+        const data = typeof att === 'string' ? att : att.data;
+        if (!data) continue;
+
+        const match = data.match(/^data:([^;]+);base64,(.+)$/);
+        if (match) {
+          const mimeType = match[1];
+          const base64Data = match[2];
+          parts.push({
+            inlineData: {
+              data: base64Data,
+              mimeType: mimeType,
+            },
+          });
+        }
+      }
     }
+
+    result = await chatSession.sendMessageStream(parts);
 
     for await (const chunk of result.stream) {
       const chunkText = chunk.text();

@@ -3,20 +3,20 @@ const API_BASE_URL =
   (import.meta.env.VITE_API_BASE_URL && import.meta.env.VITE_API_BASE_URL.replace(/\/+$/, '')) ||
   'http://localhost:5000';
 
-export async function streamChat({ prompt, image, config } = {}) {
+export async function streamChat({ prompt, image, config, docId } = {}) {
   const res = await fetch(`${API_BASE_URL}/api/chat/stream`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ prompt, image, config }),
+    body: JSON.stringify({ prompt, image, config, docId }),
   });
   return res;
 }
 
-export async function sendChat({ prompt, image, config } = {}) {
+export async function sendChat({ prompt, image, config, docId } = {}) {
   const res = await fetch(`${API_BASE_URL}/api/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ prompt, image, config }),
+    body: JSON.stringify({ prompt, image, config, docId }),
   });
   return res.json();
 }

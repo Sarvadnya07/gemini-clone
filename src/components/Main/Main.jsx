@@ -3,54 +3,15 @@ import PropTypes from 'prop-types';
 import { motion, AnimatePresence } from 'framer-motion';
 import './Main.css';
 import { Context } from '../../context/context';
+import { PERSONAS } from '../../utils/personas';
 import Message from '../Message/Message';
 import Composer from '../Composer/Composer';
+import { SUGGESTIONS } from '../../utils/suggestions';
 
-const SUGGESTED_CARDS = [
-  {
-    id: 1,
-    text: 'Suggest beautiful places to see on an upcoming road trip',
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="10" />
-        <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
-      </svg>
-    ),
-  },
-  {
-    id: 2,
-    text: 'Briefly summarize this concept: urban planning',
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <line x1="9" y1="18" x2="15" y2="18" />
-        <line x1="10" y1="14" x2="14" y2="14" />
-        <path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z" />
-      </svg>
-    ),
-  },
-  {
-    id: 3,
-    text: 'Brainstorm team bonding activities for our work retreat',
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-      </svg>
-    ),
-  },
-  {
-    id: 4,
-    text: 'Improve the readability of the following code',
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="16 18 22 12 16 6" />
-        <polyline points="8 6 2 12 8 18" />
-      </svg>
-    ),
-  },
-];
+const SUGGESTED_CARDS = SUGGESTIONS;
 
 const Main = ({ onToggleSidebar }) => {
-  const { setInput, onSent, messages, loading, config, setShowAccount, user } = useContext(Context);
+  const { setInput, onSent, messages, loading, config, setShowAccount, user, smartSuggestions } = useContext(Context);
 
   const chatEndRef = useRef(null);
   const chatContainerRef = useRef(null);
@@ -94,28 +55,79 @@ const Main = ({ onToggleSidebar }) => {
               <line x1="3" y1="18" x2="21" y2="18" />
             </svg>
           </button>
-          <div className="model-selector" onClick={() => setModelDropdown(!modelDropdown)} role="button" tabIndex={0}>
-            <span className="model-name">{modelLabels[config?.model] || 'Gemini'}</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
-            {modelDropdown && (
-              <div className="model-dropdown">
-                {Object.entries(modelLabels).map(([key, label]) => (
-                  <div
-                    key={key}
-                    className={`model-option ${config?.model === key ? 'active' : ''}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setModelDropdown(false);
-                    }}
-                  >
-                    {label}
-                  </div>
-                ))}
+          <div className="model-selector-group">
+            <div className="model-selector" onClick={() => setModelDropdown(!modelDropdown)} role="button" tabIndex={0}>
+              <div className="model-info">
+                <span className="model-name">{modelLabels[config?.model] || 'Gemini'}</span>
+                <span className="persona-badge">{PERSONAS[config?.persona]?.name || 'Assistant'}</span>
               </div>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+              {modelDropdown && (
+                <div className="model-dropdown">
+                  {Object.entries(modelLabels).map(([key, label]) => (
+                    <div
+                      key={key}
+                      className={`model-option ${config?.model === key ? 'active' : ''}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        updateConfig({ model: key });
+                        setModelDropdown(false);
+                      }}
+                    >
+                      {label}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {config.comparisonMode && (
+              <>
+                <div className="model-vs">VS</div>
+                <div className="model-selector secondary" onClick={() => setModelDropdown('secondary')} role="button" tabIndex={0}>
+                   <div className="model-info">
+                    <span className="model-name">{modelLabels[config?.comparisonModel] || 'Gemini'}</span>
+                  </div>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                  {modelDropdown === 'secondary' && (
+                    <div className="model-dropdown">
+                      {Object.entries(modelLabels).map(([key, label]) => (
+                        <div
+                          key={key}
+                          className={`model-option ${config?.comparisonModel === key ? 'active' : ''}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            updateConfig({ comparisonModel: key });
+                            setModelDropdown(false);
+                          }}
+                        >
+                          {label}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </>
             )}
           </div>
+
+          <button 
+            className={`compare-btn ${config.comparisonMode ? 'active' : ''}`}
+            onClick={() => updateConfig({ comparisonMode: !config.comparisonMode })}
+            title="Comparison Mode"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+              <line x1="12" y1="3" x2="12" y2="17" />
+              <line x1="10" y1="21" x2="14" y2="21" />
+              <line x1="12" y1="17" x2="12" y2="21" />
+            </svg>
+            <span>Compare</span>
+          </button>
         </div>
         <div className="main-nav-right">
           <button className="user-avatar-btn" onClick={() => setShowAccount(true)} aria-label="User profile">
@@ -158,15 +170,15 @@ const Main = ({ onToggleSidebar }) => {
               <div className="suggestion-cards">
                 {SUGGESTED_CARDS.map((card, index) => (
                   <motion.div
-                    key={card.id}
+                    key={index}
                     className="suggestion-card"
                     role="button"
                     tabIndex={0}
-                    onClick={() => handleCardClick(card.text)}
+                    onClick={() => handleCardClick(card.prompt)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault();
-                        handleCardClick(card.text);
+                        handleCardClick(card.prompt);
                       }
                     }}
                     initial={{ opacity: 0, y: 20 }}
@@ -174,8 +186,13 @@ const Main = ({ onToggleSidebar }) => {
                     transition={{ delay: index * 0.08, duration: 0.3 }}
                     whileHover={{ y: -4, transition: { duration: 0.15 } }}
                   >
-                    <p className="suggestion-text">{card.text}</p>
-                    <div className="suggestion-icon">{card.icon}</div>
+                    <p className="suggestion-title">{card.title}</p>
+                    <p className="suggestion-desc">{card.desc}</p>
+                    <div className="suggestion-icon-circle">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polyline points="9 18 15 12 9 6" />
+                      </svg>
+                    </div>
                   </motion.div>
                 ))}
               </div>
@@ -216,6 +233,22 @@ const Main = ({ onToggleSidebar }) => {
 
       {/* Floating Bottom Bar */}
       <div className="main-bottom">
+        <AnimatePresence>
+          {smartSuggestions.length > 0 && !loading && (
+            <motion.div 
+              className="smart-suggestions"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 5 }}
+            >
+              {smartSuggestions.map((s, i) => (
+                <button key={i} className="smart-suggestion-btn" onClick={() => onSent(s)}>
+                  {s}
+                </button>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
         <Composer />
         <p className="bottom-disclaimer">
           Gemini may display inaccurate info, including about people, so double-check its responses.

@@ -39,6 +39,30 @@
   animation: slideInLeft 0.25s ease-out;
 }
 
+/* Sidebar container for resizability */
+.sidebar-container {
+  display: flex;
+  position: relative;
+  height: 100vh;
+}
+
+.sidebar-resizer {
+  width: 4px;
+  cursor: col-resize;
+  background: transparent;
+  transition: background 0.2s;
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 10;
+}
+
+.sidebar-resizer:hover,
+.sidebar-resizer:active {
+  background: rgba(138, 180, 248, 0.3);
+}
+
 @keyframes slideInLeft {
   from {
     transform: translateX(-100%);
