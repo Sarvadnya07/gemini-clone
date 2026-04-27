@@ -144,7 +144,7 @@ const GeminiStar = ({ loading }) => (
   </div>
 );
 
-const Message = ({ id, role, content, contentB, modelA, modelB, image, attachments, loading }) => {
+const Message = ({ id, role, content, contentB, modelA, modelB, image, attachments, loading, agents }) => {
   const ctx = useContext(Context) || {};
   const { retryMessage } = ctx;
   const [copied, setCopied] = useState(false);
@@ -208,6 +208,9 @@ const Message = ({ id, role, content, contentB, modelA, modelB, image, attachmen
             {attachments.map((att, idx) => {
               const data = att.data || att;
               const isImage = typeof data === 'string' && data.startsWith('data:image');
+              const isAudio = typeof data === 'string' && data.startsWith('data:audio');
+              const isVideo = typeof data === 'string' && data.startsWith('data:video');
+              
               if (isImage) {
                 return (
                   <img
@@ -215,7 +218,24 @@ const Message = ({ id, role, content, contentB, modelA, modelB, image, attachmen
                     src={data}
                     className="message-image"
                     onClick={() => openLightbox(attachments, idx)}
+                    alt="User attachment"
                   />
+                );
+              }
+              if (isAudio) {
+                return (
+                  <div key={att.id || idx} className="message-audio-wrapper">
+                    <audio src={data} controls className="message-audio" />
+                    <span className="audio-name">{att.name || 'Audio'}</span>
+                  </div>
+                );
+              }
+              if (isVideo) {
+                return (
+                  <div key={att.id || idx} className="message-video-wrapper">
+                    <video src={data} controls className="message-video" />
+                    <span className="video-name">{att.name || 'Video'}</span>
+                  </div>
                 );
               }
               return (
@@ -251,6 +271,33 @@ const Message = ({ id, role, content, contentB, modelA, modelB, image, attachmen
             ) : (
               <MarkdownContent content={content} />
             )}
+          </div>
+        )}
+
+        {/* Agent Steps Accordion */}
+        {agents && agents.length > 0 && (
+          <div className="agent-steps-wrapper">
+            <details className="agent-steps-details">
+              <summary className="agent-steps-summary">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                </svg>
+                Thinking Process ({agents.length} agents)
+              </summary>
+              <div className="agent-steps-content">
+                {agents.map((step, idx) => (
+                  <div key={idx} className="agent-step">
+                    <div className="agent-step-header">
+                      <span className="agent-step-role">{step.role}</span>
+                      <span className="agent-step-dot" />
+                    </div>
+                    <div className="agent-step-body">
+                       <ReactMarkdown>{step.output}</ReactMarkdown>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </details>
           </div>
         )}
 

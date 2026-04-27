@@ -54,9 +54,9 @@ const safetySettings = [
 ];
 
 // ---------------------------------------
-// MAIN RUN FUNCTION
+// MAIN RUN FUNCTION (with Auto-Retry)
 // ---------------------------------------
-async function run(prompt) {
+async function run(prompt, retries = 3) {
   if (!prompt || typeof prompt !== "string" || !prompt.trim()) {
     throw new Error("Prompt must be a non-empty string");
   }
@@ -64,25 +64,33 @@ async function run(prompt) {
     throw new Error('Gemini API key not configured. Set GEMINI_API_KEY in your environment or use MOCK_STREAM for local testing.');
   }
 
-  try {
-    const chatSession = defaultModel.startChat({
-      generationConfig,
-      safetySettings,
-      history: [],
-    });
+  let attempt = 0;
+  while (attempt < retries) {
+    try {
+      const chatSession = defaultModel.startChat({
+        generationConfig,
+        safetySettings,
+        history: [],
+      });
 
-    const result = await chatSession.sendMessage(prompt);
-    const text = result?.response?.text?.();
+      const result = await chatSession.sendMessage(prompt);
+      const text = result?.response?.text?.();
 
-    if (!text || typeof text !== 'string') {
-      throw new Error('Empty or invalid response from Gemini');
+      if (!text || typeof text !== 'string') {
+        throw new Error('Empty or invalid response from Gemini');
+      }
+
+      return text;
+    } catch (err) {
+      attempt++;
+      console.warn(`⚠️ Gemini API attempt ${attempt} failed:`, err.message);
+      if (attempt >= retries) {
+        console.error('🔴 Error inside gemini.run(): Final attempt failed.');
+        throw err;
+      }
+      // Exponential backoff
+      await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 500));
     }
-
-    return text;
-  } catch (err) {
-    console.error('🔴 Error inside gemini.run():');
-    console.error(err);
-    throw err;
   }
 }
 

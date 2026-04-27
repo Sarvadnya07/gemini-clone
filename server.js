@@ -1,11 +1,22 @@
 // server.js (ROOT, CommonJS) — Production-hardened
 require("dotenv").config();
+const Sentry = require("@sentry/node");
+
+if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    environment: process.env.NODE_ENV || "development",
+    tracesSampleRate: 1.0,
+  });
+}
+
 const express = require("express");
 const path = require("path");
 const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
 const mongoose = require("mongoose");
+const PERSONAS = require("./utils/personas");
 const { run, runStream } = require("./gemini");
 const authMiddleware = require("./middleware/auth");
 const { generalLimiter, chatLimiter } = require("./middleware/rateLimiter");
@@ -20,6 +31,9 @@ const multer = require("multer");
 const pdf = require("pdf-parse");
 const mammoth = require("mammoth");
 const { chunkText, getEmbeddings, performRAG } = require("./utils/rag");
+const AgentCoordinator = require("./utils/agents");
+const http = require("http");
+const { Server } = require("socket.io");
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -27,6 +41,11 @@ const upload = multer({ storage: multer.memoryStorage() });
 validateEnv();
 
 const app = express();
+
+// The request handler must be the first middleware on the app
+if (process.env.SENTRY_DSN) {
+  app.use(Sentry.Handlers.requestHandler());
+}
 
 // ---------------------------------------
 // CONFIG
@@ -210,6 +229,22 @@ app.post("/api/chat", chatLimiter, validateChatInput, async (req, res) => {
 });
 
 // ---------------------------------------
+// MULTI-AGENT CHAT ROUTE
+// ---------------------------------------
+app.post("/api/chat/agents", chatLimiter, async (req, res) => {
+  try {
+    const { prompt } = req.body;
+    if (!prompt) return res.status(400).json({ error: "Prompt is required" });
+
+    const result = await AgentCoordinator.executeComplexTask(prompt);
+    res.json({ success: true, ...result });
+  } catch (error) {
+    logger.error("Multi-agent route error", { message: error.message });
+    res.status(500).json({ error: "Multi-agent orchestration failed" });
+  }
+});
+
+// ---------------------------------------
 // DOCUMENT RAG ROUTES (Auth-protected)
 // ---------------------------------------
 app.post("/api/documents/upload", authMiddleware, upload.single("file"), async (req, res) => {
@@ -266,6 +301,17 @@ app.get("/api/documents", authMiddleware, async (req, res) => {
   }
 });
 
+app.delete("/api/documents/:id", authMiddleware, async (req, res) => {
+  if (!req.user) return res.status(401).json({ error: "Unauthorized" });
+  try {
+    await Document.deleteOne({ _id: req.params.id, userId: req.user.uid });
+    res.json({ success: true });
+  } catch (error) {
+    logger.error("Document deletion error", { message: error.message });
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ---------------------------------------
 // STREAMING CHAT ROUTE (REAL)
 // ---------------------------------------
@@ -277,6 +323,20 @@ app.post("/api/chat/stream", chatLimiter, validateChatInput, async (req, res) =>
   const { prompt, image, config, docId } = req.body;
 
   try {
+    // Inject Persona Instruction
+    if (config.persona) {
+      let personaInstruction = PERSONAS[config.persona]?.instruction;
+      if (!personaInstruction && req.user) {
+        const userDoc = await User.findOne({ userId: req.user.uid });
+        const custom = userDoc?.customPersonas?.find(p => p.id === config.persona);
+        if (custom) personaInstruction = custom.instruction;
+      }
+      if (personaInstruction) {
+        config.systemInstruction = personaInstruction;
+        logger.info("Persona injected", { persona: config.persona });
+      }
+    }
+
     let augmentedPrompt = prompt;
 
     // RAG Implementation
@@ -392,6 +452,50 @@ app.post("/api/user/settings", authMiddleware, async (req, res) => {
   }
 });
 
+app.get("/api/user/personas", authMiddleware, async (req, res) => {
+  if (!req.user) return res.status(401).json({ error: "Unauthorized" });
+  try {
+    const user = await User.findOne({ userId: req.user.uid });
+    const custom = user?.customPersonas || [];
+    // Return both static and custom
+    res.json({
+      defaults: PERSONAS,
+      custom: custom
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post("/api/user/personas", authMiddleware, async (req, res) => {
+  if (!req.user) return res.status(401).json({ error: "Unauthorized" });
+  const { persona } = req.body;
+  try {
+    const user = await User.findOneAndUpdate(
+      { userId: req.user.uid },
+      { $push: { customPersonas: persona } },
+      { upsert: true, new: true }
+    );
+    res.json(user.customPersonas);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete("/api/user/personas/:id", authMiddleware, async (req, res) => {
+  if (!req.user) return res.status(401).json({ error: "Unauthorized" });
+  try {
+    const user = await User.findOneAndUpdate(
+      { userId: req.user.uid },
+      { $pull: { customPersonas: { id: req.params.id } } },
+      { new: true }
+    );
+    res.json(user.customPersonas);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ---------------------------------------
 // CHAT HISTORY ROUTES (Auth-protected)
 // ---------------------------------------
@@ -461,6 +565,10 @@ if (NODE_ENV === "production") {
 // ---------------------------------------
 // GLOBAL ERROR HANDLER
 // ---------------------------------------
+if (process.env.SENTRY_DSN) {
+  app.use(Sentry.Handlers.errorHandler());
+}
+
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   logger.error("Unhandled Express error", { message: err.message, stack: err.stack });
@@ -472,10 +580,38 @@ app.use((err, req, res, next) => {
 // ---------------------------------------
 // START SERVER
 // ---------------------------------------
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: ALLOWED_ORIGINS,
+    methods: ["GET", "POST"],
+  },
+});
+
+// Collaborative Workspace Logic
+io.on("connection", (socket) => {
+  logger.info(`User connected: ${socket.id}`);
+
+  socket.on("join-chat", (chatId) => {
+    socket.join(chatId);
+    logger.info(`User ${socket.id} joined room: ${chatId}`);
+  });
+
+  socket.on("send-message", ({ chatId, message }) => {
+    // Broadcast to others in the same room
+    socket.to(chatId).emit("receive-message", message);
+  });
+
+  socket.on("disconnect", () => {
+    logger.info(`User disconnected: ${socket.id}`);
+  });
+});
+
 if (require.main === module) {
-  app.listen(PORT, () => {
+  server.listen(PORT, () => {
     logger.info(`🚀 Gemini backend running at: http://localhost:${PORT} [${NODE_ENV}]`);
     logger.info(`📡 CORS allowed origins: ${ALLOWED_ORIGINS.join(", ")}`);
+    logger.info(`⚡ Socket.io enabled for real-time collaboration`);
   });
 }
 

@@ -1,7 +1,19 @@
 /* eslint-disable react-refresh/only-export-components */
 import { StrictMode, lazy, Suspense } from "react";
 import { createRoot } from "react-dom/client";
+import * as Sentry from "@sentry/react";
+import { BrowserTracing } from "@sentry/tracing";
 import "./index.css";
+
+if (import.meta.env.VITE_SENTRY_DSN) {
+  Sentry.init({
+    dsn: import.meta.env.VITE_SENTRY_DSN,
+    integrations: [new BrowserTracing()],
+    environment: import.meta.env.MODE,
+    tracesSampleRate: 1.0,
+  });
+}
+
 import ContextProvider from "./context/context.jsx";
 import ErrorBoundary from "./components/ErrorBoundary/ErrorBoundary.jsx";
 import startHeartbeat from "./utils/heartbeat.js";

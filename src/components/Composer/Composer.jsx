@@ -7,7 +7,7 @@ const Composer = () => {
   const { 
     input, setInput, onSent, loading, 
     attachments, setAttachments,
-    setRagDocId, user 
+    setRagDocId, user, fetchDocuments 
   } = useContext(Context);
 
   const textareaRef = useRef(null);
@@ -103,6 +103,7 @@ const Composer = () => {
                 });
                 if (res.ok) {
                   const data = await res.json();
+                  fetchDocuments(); // Refresh the list in sidebar
                   resolve({
                     id: data.id,
                     name: file.name,
@@ -266,7 +267,7 @@ const Composer = () => {
           </svg>
         </button>
 
-        <input type="file" accept="*/*" hidden multiple ref={fileInputRef} onChange={handleFileChange} />
+        <input type="file" accept="image/*,application/pdf,.doc,.docx,text/plain,audio/*,video/*" hidden multiple ref={fileInputRef} onChange={handleFileChange} />
 
         <textarea
           ref={textareaRef}

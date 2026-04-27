@@ -91,6 +91,21 @@
   color: #8e9196;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  padding: 12px 14px 4px;
+}
+
+.sidebar-section {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 12px;
+}
+
+.sidebar-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #6b6f75;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
   padding: 8px 14px 4px;
 }
 
@@ -272,6 +287,58 @@
 .sync-indicator.syncing {
   opacity: 1;
   animation: pulse-sync 1.5s infinite;
+}
+
+/* ------------------------------------------------------
+   KNOWLEDGE BASE (RAG)
+------------------------------------------------------ */
+.sidebar-kb {
+  margin-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebar-kb-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-right: 12px;
+}
+
+.kb-badge {
+  background: rgba(66, 133, 244, 0.2);
+  color: #8ab4f8;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 8px;
+  font-weight: 700;
+}
+
+.sidebar-kb-list {
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 4px;
+}
+
+.kb-entry {
+  font-size: 13px;
+  padding: 8px 14px;
+}
+
+.kb-entry.active {
+  background-color: rgba(138, 180, 248, 0.15);
+  color: #8ab4f8;
+  border-left: 2px solid #8ab4f8;
+}
+
+.kb-empty {
+  font-size: 12px;
+  color: #5f6368;
+  padding: 12px 14px;
+  font-style: italic;
 }
 
 @keyframes pulse-sync {

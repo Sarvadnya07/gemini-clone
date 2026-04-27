@@ -1,10 +1,12 @@
 /* eslint-disable react/prop-types */
 import { createContext, useCallback, useState, useEffect } from 'react';
 import { streamChat } from '../api/client';
+import { io } from 'socket.io-client';
 import { checkContent } from '../utils/moderation';
 import { PERSONAS } from '../utils/personas';
 import { logEvent } from '../utils/analytics';
-import { onAuthChange, loginWithGoogle, logout } from '../config/firebase';
+import { onAuthChange, loginWithGoogle, loginWithGithub, logout } from '../config/firebase';
+import { deriveKey, encryptMessage, decryptMessage } from '../utils/crypto';
 
 
 export const Context = createContext();
@@ -12,8 +14,10 @@ export const Context = createContext();
 const ContextProvider = ({ children }) => {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]); // [{ id, role, content, createdAt }]
+  const [encryptionKey, setEncryptionKey] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null); // optional error message
+  const [socket, setSocket] = useState(null);
 
   const [prevPrompts, setPrevPrompts] = useState([]);
   const [currentChatId, setCurrentChatId] = useState(null);
@@ -24,6 +28,9 @@ const ContextProvider = ({ children }) => {
   const [showSettings, setShowSettings] = useState(false);
   const [showDashboard, setShowDashboard] = useState(false);
   const [ragDocId, setRagDocId] = useState(null);
+  const [documents, setDocuments] = useState([]);
+  const [defaultPersonas, setDefaultPersonas] = useState(PERSONAS);
+  const [customPersonas, setCustomPersonas] = useState([]);
   const [smartSuggestions, setSmartSuggestions] = useState([]);
 
   const [templates, setTemplates] = useState([]);
@@ -38,6 +45,8 @@ const ContextProvider = ({ children }) => {
     persona: "helpful_assistant",
     comparisonMode: false,
     comparisonModel: "gemini-2.5-pro",
+    agentMode: false,
+    secretMode: false,
     plugins: {
       googleSearch: false
     }
@@ -81,6 +90,37 @@ const ContextProvider = ({ children }) => {
     }
   }, [user]);
 
+  // Initialize Socket.io (only when authenticated)
+  useEffect(() => {
+    if (!user) {
+      if (socket) { socket.close(); setSocket(null); }
+      return;
+    }
+    const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+    const newSocket = io(apiBase);
+    setSocket(newSocket);
+
+    return () => newSocket.close();
+  }, [user]);
+
+  // Sync with other users in the same chat
+  useEffect(() => {
+    if (!socket || !currentChatId) return;
+
+    socket.emit('join-chat', currentChatId);
+
+    const handleReceiveMessage = (message) => {
+      setMessages((prev) => {
+        // Prevent duplicates
+        if (prev.find(m => m.id === message.id)) return prev;
+        return [...prev, message];
+      });
+    };
+
+    socket.on('receive-message', handleReceiveMessage);
+    return () => socket.off('receive-message');
+  }, [socket, currentChatId]);
+
   // Sync auth state and load settings
   useEffect(() => {
     const unsubscribe = onAuthChange(async (u) => {
@@ -92,39 +132,174 @@ const ContextProvider = ({ children }) => {
           const res = await fetch(`${apiBase}/api/user/settings`, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
-          if (res.ok) {
-            const remoteSettings = await res.json();
-            setConfig((prev) => ({ ...prev, ...remoteSettings }));
+            if (res.ok) {
+              const remoteSettings = await res.json();
+              setConfig((prev) => ({ ...prev, ...remoteSettings }));
+            }
+            // Also fetch user documents and personas
+            fetchDocuments(u);
+            fetchPersonas(u);
+          } catch (err) {
+            console.warn('Load settings, documents or personas failed', err);
           }
-        } catch (err) {
-          console.warn('Load settings failed', err);
+        } else {
+          setDocuments([]);
+          setCustomPersonas([]);
         }
+      });
+      return () => unsubscribe();
+    }, []);
+
+  const fetchDocuments = useCallback(async (u) => {
+    const currentUser = u || user;
+    if (!currentUser) return;
+    try {
+      const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+      const token = await currentUser.getIdToken();
+      const res = await fetch(`${apiBase}/api/documents`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setDocuments(data);
       }
-    });
-    return () => unsubscribe();
-  }, []);
+    } catch (err) {
+      console.warn('Fetch documents failed', err);
+    }
+  }, [user]);
+
+  const deleteDocument = useCallback(async (docId) => {
+    if (!user) return;
+    try {
+      const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+      const token = await user.getIdToken();
+      const res = await fetch(`${apiBase}/api/documents/${docId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        setDocuments(prev => prev.filter(d => d._id !== docId));
+        if (ragDocId === docId) setRagDocId(null);
+      }
+    } catch (err) {
+      console.error('Delete document failed', err);
+    }
+  }, [user, ragDocId]);
+
+  const fetchPersonas = useCallback(async (u) => {
+    const currentUser = u || user;
+    if (!currentUser) return;
+    try {
+      const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+      const token = await currentUser.getIdToken();
+      const res = await fetch(`${apiBase}/api/user/personas`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setDefaultPersonas(data.defaults || {});
+        setCustomPersonas(data.custom || []);
+      }
+    } catch (err) {
+      console.warn('Fetch personas failed', err);
+    }
+  }, [user]);
+
+  const addPersona = useCallback(async (persona) => {
+    if (!user) return;
+    try {
+      const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+      const token = await user.getIdToken();
+      const res = await fetch(`${apiBase}/api/user/personas`, {
+        method: 'POST',
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ persona })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setCustomPersonas(data);
+      }
+    } catch (err) {
+      console.error('Add persona failed', err);
+    }
+  }, [user]);
+
+  const deletePersona = useCallback(async (id) => {
+    if (!user) return;
+    try {
+      const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+      const token = await user.getIdToken();
+      const res = await fetch(`${apiBase}/api/user/personas/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setCustomPersonas(data);
+      }
+    } catch (err) {
+      console.error('Delete persona failed', err);
+    }
+  }, [user]);
 
   const saveHistory = useCallback((history) => {
     localStorage.setItem('gemini_history', JSON.stringify(history));
   }, []);
 
-  const persistChat = useCallback((chatId, title, msgs) => {
-    localStorage.setItem(`gemini_chat_${chatId}`, JSON.stringify(msgs));
-  }, []);
-
-  const loadChat = useCallback((chatId) => {
-    try {
-      const data = localStorage.getItem(`gemini_chat_${chatId}`);
-      if (data) {
-        setMessages(JSON.parse(data));
-        setCurrentChatId(chatId);
+  const persistChat = useCallback(async (chatId, title, msgs) => {
+    let dataToStore = msgs;
+    if (config.secretMode && encryptionKey) {
+      try {
+        const encrypted = await encryptMessage(JSON.stringify(msgs), encryptionKey);
+        dataToStore = { encrypted: true, blob: encrypted };
+      } catch (err) {
+        console.error('Encryption failed', err);
       }
-    } catch { /* ignore */ }
-  }, []);
+    }
+    localStorage.setItem(`gemini_chat_${chatId}`, JSON.stringify(dataToStore));
+  }, [config.secretMode, encryptionKey]);
+
+  const loadChat = useCallback(async (chatId) => {
+    try {
+      const rawData = localStorage.getItem(`gemini_chat_${chatId}`);
+      if (!rawData) return;
+      
+      let data = JSON.parse(rawData);
+      
+      if (data.encrypted) {
+        if (!encryptionKey) {
+          const pass = window.prompt('Enter passphrase to decrypt this Secret Chat:');
+          if (pass) {
+            const salt = new TextEncoder().encode(chatId); // Use chatId as salt for simplicity
+            const key = await deriveKey(pass, salt);
+            setEncryptionKey(key);
+            const decrypted = await decryptMessage(data.blob, key);
+            data = JSON.parse(decrypted);
+          } else {
+            setError('Passphrase required for Secret Chat');
+            return;
+          }
+        } else {
+          const decrypted = await decryptMessage(data.blob, encryptionKey);
+          data = JSON.parse(decrypted);
+        }
+      }
+      
+      setMessages(data);
+      setCurrentChatId(chatId);
+    } catch (err) { 
+      console.error('Load chat failed', err);
+      setError('Failed to load or decrypt chat');
+    }
+  }, [encryptionKey]);
 
   const newChat = useCallback(() => {
     setMessages([]);
     setCurrentChatId(null);
+    setEncryptionKey(null);
     setInput('');
     setAttachments([]);
   }, []);
@@ -181,7 +356,7 @@ const ContextProvider = ({ children }) => {
       try {
         const mod = checkContent(finalPrompt);
         if (mod.flagged) {
-          setError(`Flagged: ${mod.categories.join(', ')}`);
+          setError(`Flagged: ${mod.reason}`);
           return;
         }
       } catch (e) {
@@ -195,6 +370,19 @@ const ContextProvider = ({ children }) => {
         chatId = Date.now().toString();
         setCurrentChatId(chatId);
         isNewChat = true;
+
+        // E2EE Key Initialization
+        if (config.secretMode && !encryptionKey) {
+          const pass = window.prompt('Create a passphrase for this Secret Chat:');
+          if (pass) {
+            const salt = new TextEncoder().encode(chatId);
+            const key = await deriveKey(pass, salt);
+            setEncryptionKey(key);
+          } else {
+            setError('Passphrase required for Secret Chat');
+            return;
+          }
+        }
 
         // Add to history list if it's a new chat
         setPrevPrompts((prev) => {
@@ -234,6 +422,12 @@ const ContextProvider = ({ children }) => {
       setMessages((prev) => {
         const updated = [...prev, userMsg];
         persistChat(chatId, finalPrompt || 'Image Prompt', updated);
+        
+        // Notify others in the workspace
+        if (socket) {
+          socket.emit('send-message', { chatId, message: userMsg });
+        }
+        
         return updated;
       });
 
@@ -257,6 +451,43 @@ const ContextProvider = ({ children }) => {
 
       setMessages((prev) => [...prev, assistantMsg]);
 
+      if (config.agentMode) {
+        try {
+          const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+          const response = await fetch(`${apiBase}/api/chat/agents`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt: finalPrompt })
+          });
+          const data = await response.json();
+          if (data.success) {
+            setMessages((prev) => {
+              const updated = [...prev];
+              const idx = updated.findIndex((m) => m.id === assistantMsgId);
+              if (idx !== -1) {
+                updated[idx] = { ...updated[idx], content: data.response, agents: data.steps };
+              }
+              return updated;
+            });
+          } else {
+            throw new Error(data.error || 'Agent orchestration failed');
+          }
+        } catch (err) {
+          console.error('Agent Mode error:', err);
+          setMessages((prev) => {
+            const updated = [...prev];
+            const idx = updated.findIndex((m) => m.id === assistantMsgId);
+            if (idx !== -1) {
+              updated[idx] = { ...updated[idx], content: '⚠️ Agent Orchestration failed. Please try again.' };
+            }
+            return updated;
+          });
+        } finally {
+          setLoading(false);
+          return; // Skip streaming logic
+        }
+      }
+
       const runSingleStream = async (targetField, targetModel) => {
         try {
           const streamConfig = {
@@ -264,12 +495,19 @@ const ContextProvider = ({ children }) => {
             model: targetModel,
             systemInstruction: PERSONAS[config.persona]?.instruction || null
           };
+
+          // Get auth token for RAG and persona injection
+          let authToken = null;
+          if (user) {
+            try { authToken = await user.getIdToken(); } catch { /* proceed without token */ }
+          }
           
           const response = await streamChat({ 
             prompt: finalPrompt, 
             image: userMsg.attachments, 
             config: streamConfig,
-            docId: ragDocId
+            docId: ragDocId,
+            token: authToken
           });
 
           if (!response.ok) throw new Error(`Server error: ${response.status}`);
@@ -353,7 +591,7 @@ const ContextProvider = ({ children }) => {
         setLoading(false);
       }
     },
-    [input, loading, currentChatId, saveHistory, attachments, config, persistChat, renameConversation]
+    [input, loading, currentChatId, saveHistory, attachments, config, persistChat, renameConversation, socket]
   );
 
     // Retry helper: resend the last user prompt that preceded a given assistant message
@@ -410,10 +648,18 @@ const ContextProvider = ({ children }) => {
     setShowDashboard,
     ragDocId,
     setRagDocId,
+    documents,
+    fetchDocuments,
+    deleteDocument,
+    defaultPersonas,
+    customPersonas,
+    addPersona,
+    deletePersona,
     smartSuggestions,
     setSmartSuggestions,
     user,
     loginWithGoogle,
+    loginWithGithub,
     logout,
     config,
     isSyncing

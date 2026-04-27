@@ -3,10 +3,13 @@ const API_BASE_URL =
   (import.meta.env.VITE_API_BASE_URL && import.meta.env.VITE_API_BASE_URL.replace(/\/+$/, '')) ||
   'http://localhost:5000';
 
-export async function streamChat({ prompt, image, config, docId } = {}) {
+export async function streamChat({ prompt, image, config, docId, token } = {}) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  
   const res = await fetch(`${API_BASE_URL}/api/chat/stream`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: JSON.stringify({ prompt, image, config, docId }),
   });
   return res;

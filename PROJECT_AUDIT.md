@@ -45,7 +45,7 @@ This audit provides a professional assessment of the current codebase, identifyi
 
 ### 4. Searchable Chat History ✅
 - **Benefit:** Add a search bar to the sidebar to find specific past conversations by keyword.
-- **Status:** Verified and polished existing sidebar filter functionality.
+- **Status:** Verified and polished existing sidebar filter functionality + Added dedicated Pinned section for important chats.
 
 ### 5. File Analysis Pipeline ✅
 - **Benefit:** Move beyond images to support PDF and CSV analysis.
@@ -53,7 +53,7 @@ This audit provides a professional assessment of the current codebase, identifyi
 
 ### 6. Auto-titling & Personas ✅
 - **Benefit:** UX parity with Gemini/ChatGPT; specialized system instructions.
-- **Status:** Added background title generation and persona selection (Helpful, Python Expert, etc.).
+- **Status:** Added background title generation and full Custom Persona Management UI for user-defined characters.
 
 ### 7. Keyboard Shortcuts ✅
 - **Benefit:** Power-user accessibility.
@@ -77,7 +77,7 @@ This audit provides a professional assessment of the current codebase, identifyi
 
 ### 12. Vector Search (RAG) ✅
 - **Benefit:** Knowledge retrieval from private data.
-- **Status:** Implemented semantic retrieval for PDF, DOCX, and Text files using Google Embeddings.
+- **Status:** Implemented semantic retrieval for PDF, DOCX, and Text files using Google Embeddings + Sidebar Knowledge Base Management UI.
 
 ### 13. Smart Prompt Suggestions ✅
 - **Benefit:** UX flow and engagement.
@@ -98,3 +98,35 @@ This audit provides a professional assessment of the current codebase, identifyi
 ## 🔒 Security Posture ✅
 - **Current Status:** Excellent (Harden Helmet CSP, CORS, Rate Limiting, and Env Validation).
 - **Recommendation:** Periodic rotation of API keys and monitoring of Redis cache size.
+
+---
+
+## 🐛 Production Bug Fixes (QA Audit) ✅
+
+### BUG-1: `loadChat` referenced before defined (Critical) ✅
+- **Root Cause:** `useEffect` in `App.jsx` used `loadChat` before `useContext(Context)` destructured it.
+- **Fix:** Moved Context destructuring above the `useEffect` hook.
+
+### BUG-2: Dead `PERSONAS` import in `Settings.jsx` (Low) ✅
+- **Root Cause:** Leftover import after refactoring to `defaultPersonas` from Context.
+- **Fix:** Removed unused import.
+
+### BUG-3: Persona dropdown empty for unauthenticated users (High) ✅
+- **Root Cause:** `defaultPersonas` initialized as `{}`. Only populated after login via server.
+- **Fix:** Initialized `defaultPersonas` with static `PERSONAS` from frontend utils as fallback.
+
+### BUG-4: Env validator crashes server on startup (Critical) ✅
+- **Root Cause:** Schema validated `GOOGLE_API_KEY` but env uses `GEMINI_API_KEY`. Also `MONGODB_URI` validated as required URL, but isn't always set in dev.
+- **Fix:** Corrected key name, made vars optional, changed to warning-only in dev (fatal in production).
+
+### BUG-5: Moderation crash on flagged content (High) ✅
+- **Root Cause:** Code accessed `mod.categories.join(', ')` but `checkContent()` returns `{ flagged, reason }`.
+- **Fix:** Changed to `mod.reason`.
+
+### BUG-6: Socket.io connects without authentication (Low) ✅
+- **Root Cause:** Socket initialized eagerly on mount regardless of auth state.
+- **Fix:** Guarded socket creation behind `user` state. Disconnects on logout.
+
+### BUG-7: RAG feature broken — no auth token in streaming requests (Critical) ✅
+- **Root Cause:** `streamChat` in `client.js` never sent `Authorization` header. Server couldn't identify user, so RAG document lookups and custom persona injection always failed.
+- **Fix:** Added `token` parameter to `streamChat()`. Context now passes `user.getIdToken()` with every stream request.

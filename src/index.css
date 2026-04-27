@@ -27,6 +27,9 @@ html {
   --border-color: rgba(255, 255, 255, 0.08);
   --input-bg: rgba(255, 255, 255, 0.05);
   --msg-user-bg: rgba(255, 255, 255, 0.06);
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --gemini-glow: 0 0 20px rgba(138, 180, 248, 0.4);
 }
 
 body.theme-oled {

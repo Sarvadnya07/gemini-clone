@@ -2,11 +2,12 @@ import { useContext } from 'react';
 import { motion } from 'framer-motion';
 import './Settings.css';
 import { Context } from '../../context/context';
-import { PERSONAS } from '../../utils/personas';
 
 const Settings = () => {
-  const { config, updateConfig, setShowSettings, templates, addTemplate, deleteTemplate, setInput } =
-    useContext(Context);
+  const { 
+    config, updateConfig, setShowSettings, templates, addTemplate, deleteTemplate, setInput,
+    defaultPersonas, customPersonas, addPersona, deletePersona
+  } = useContext(Context);
 
   const handleModelChange = (e) => {
     updateConfig({ model: e.target.value });
@@ -56,9 +57,18 @@ const Settings = () => {
           <div className="settings-group">
             <label>Persona</label>
             <select value={config.persona} onChange={(e) => updateConfig({ persona: e.target.value })}>
-              {Object.entries(PERSONAS).map(([id, p]) => (
-                <option key={id} value={id}>{p.name}</option>
-              ))}
+              <optgroup label="Standard Personas">
+                {Object.entries(defaultPersonas).map(([id, p]) => (
+                  <option key={id} value={id}>{p.name}</option>
+                ))}
+              </optgroup>
+              {customPersonas.length > 0 && (
+                <optgroup label="My Custom Personas">
+                  {customPersonas.map((p) => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </optgroup>
+              )}
             </select>
           </div>
 
@@ -75,6 +85,28 @@ const Settings = () => {
                 onChange={(e) => updateConfig({ 
                   plugins: { ...config.plugins, googleSearch: e.target.checked } 
                 })} 
+              />
+            </div>
+            <div className="plugin-item">
+              <div className="plugin-info">
+                <span className="plugin-name">Multi-Agent Orchestration</span>
+                <span className="plugin-desc">Uses multiple agents (Researcher, Writer, Reviewer) for complex tasks.</span>
+              </div>
+              <input 
+                type="checkbox" 
+                checked={config.agentMode} 
+                onChange={(e) => updateConfig({ agentMode: e.target.checked })} 
+              />
+            </div>
+            <div className="plugin-item">
+              <div className="plugin-info">
+                <span className="plugin-name">Secret Chat (E2EE)</span>
+                <span className="plugin-desc">Messages are encrypted client-side. The server cannot read them.</span>
+              </div>
+              <input 
+                type="checkbox" 
+                checked={config.secretMode} 
+                onChange={(e) => updateConfig({ secretMode: e.target.checked })} 
               />
             </div>
           </div>
@@ -106,6 +138,37 @@ const Settings = () => {
               <span>Precise</span>
               <span>Creative</span>
             </div>
+          </div>
+
+          <div className="settings-group">
+            <label>Custom AI Personas</label>
+            <div className="personas-list">
+              {customPersonas.map((p) => (
+                <div key={p.id} className="persona-entry">
+                  <div className="persona-info">
+                    <span className="persona-name">{p.name}</span>
+                    <span className="persona-instruction">{p.instruction.slice(0, 50)}...</span>
+                  </div>
+                  <button className="persona-delete" onClick={() => deletePersona(p.id)}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                  </button>
+                </div>
+              ))}
+              {customPersonas.length === 0 && <p className="persona-empty">No custom personas created</p>}
+            </div>
+            <button
+              className="persona-create-btn"
+              onClick={() => {
+                const name = window.prompt('Persona name (e.g. "Math Tutor")');
+                const instruction = window.prompt('System Instruction (e.g. "Explain math problems step-by-step")');
+                if (name && instruction) {
+                  addPersona({ id: `custom_${Date.now()}`, name, instruction });
+                }
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Create New Persona
+            </button>
           </div>
 
           <div className="settings-group">

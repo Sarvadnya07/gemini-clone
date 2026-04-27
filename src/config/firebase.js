@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, GithubAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
 
 // Replace with your actual Firebase config from Google AI Studio or Firebase Console
 const firebaseConfig = {
@@ -14,7 +14,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
+export const githubProvider = new GithubAuthProvider();
 
 export const loginWithGoogle = () => signInWithPopup(auth, googleProvider);
+export const loginWithGithub = () => signInWithPopup(auth, githubProvider);
 export const logout = () => signOut(auth);
 export const onAuthChange = (callback) => onAuthStateChanged(auth, callback);

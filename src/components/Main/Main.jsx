@@ -11,7 +11,7 @@ import { SUGGESTIONS } from '../../utils/suggestions';
 const SUGGESTED_CARDS = SUGGESTIONS;
 
 const Main = ({ onToggleSidebar }) => {
-  const { setInput, onSent, messages, loading, config, setShowAccount, user, smartSuggestions } = useContext(Context);
+  const { setInput, onSent, messages, loading, config, setShowAccount, user, smartSuggestions, currentChatId } = useContext(Context);
 
   const chatEndRef = useRef(null);
   const chatContainerRef = useRef(null);
@@ -128,6 +128,25 @@ const Main = ({ onToggleSidebar }) => {
             </svg>
             <span>Compare</span>
           </button>
+
+          {currentChatId && (
+            <button 
+              className="share-btn"
+              onClick={() => {
+                const url = `${window.location.origin}${window.location.pathname}?chatId=${currentChatId}`;
+                navigator.clipboard.writeText(url);
+                alert('Collaboration link copied to clipboard!');
+              }}
+              title="Share Chat for Collaboration"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+                <polyline points="16 6 12 2 8 6" />
+                <line x1="12" y1="2" x2="12" y2="15" />
+              </svg>
+              <span>Share</span>
+            </button>
+          )}
         </div>
         <div className="main-nav-right">
           <button className="user-avatar-btn" onClick={() => setShowAccount(true)} aria-label="User profile">
@@ -215,6 +234,7 @@ const Main = ({ onToggleSidebar }) => {
                   image={msg.image}
                   attachments={msg.attachments}
                   loading={loading && msg.role === 'assistant' && msg.content === ''}
+                  agents={msg.agents}
                 />
               ))}
               <div ref={chatEndRef} />

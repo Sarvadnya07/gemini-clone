@@ -10,6 +10,11 @@ const UserSchema = new mongoose.Schema({
     persona: { type: String, default: "helpful_assistant" },
     fontSize: { type: String, default: "medium" }
   },
+  customPersonas: [{
+    id: { type: String, required: true },
+    name: { type: String, required: true },
+    instruction: { type: String, required: true }
+  }],
   updatedAt: { type: Date, default: Date.now }
 });
 
